@@ -28,4 +28,8 @@ object BreakText {
     val Etiqueta = TextStyle(fontFamily = Jersey25, fontWeight = FontWeight.Normal, fontSize = 32.sp)
     val Boton = TextStyle(fontFamily = Jersey25, fontWeight = FontWeight.Normal, fontSize = 32.sp)
     val Campo = TextStyle(fontFamily = Poppins, fontWeight = FontWeight.Medium, fontSize = 14.sp)
+    val TituloRecuperacion = TextStyle(fontFamily = Inter, fontWeight = FontWeight.Bold, fontSize = 44.sp, letterSpacing = (-1).sp)
+    val TituloExito = TextStyle(fontFamily = Inter, fontWeight = FontWeight.Bold, fontSize = 40.sp, letterSpacing = (-1).sp)
+    val TextoGuia = TextStyle(fontFamily = Poppins, fontWeight = FontWeight.Medium, fontSize = 20.sp)
+    val MensajeError = TextStyle(fontFamily = Inter, fontWeight = FontWeight.Medium, fontSize = 13.sp)
 }

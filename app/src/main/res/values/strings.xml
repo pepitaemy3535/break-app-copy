@@ -32,4 +32,26 @@
     <string name="login_ingresar">Ingresar</string>
     <string name="login_registro">No tienes una cuenta? Registrate</string>
     <string name="login_toast_temporal">Ingreso correcto (mensaje temporal)</string>
+
+    <!-- Recuperar usuario (¿Olvidaste tu usuario?) -->
+    <string name="recuperar_volver_descripcion">Volver</string>
+    <string name="recuperar_titulo">¿Olvidaste tu usuario?</string>
+    <string name="recuperar_correo_instruccion">Digita el correo con el que ingresaste.</string>
+    <string name="recuperar_correo_etiqueta">Correo</string>
+    <string name="recuperar_correo_placeholder">nombre@gmail.com</string>
+    <string name="recuperar_correo_error">El correo digitado no corresponde con el que ingresaste</string>
+    <string name="recuperar_codigo_instruccion">Ingresa el código de 6 digitos que enviamos a tu correo electrónico</string>
+    <string name="recuperar_codigo_etiqueta">Código</string>
+    <string name="recuperar_codigo_placeholder">Digíta el código</string>
+    <string name="recuperar_reenviar_codigo">Reenviar código</string>
+    <string name="recuperar_nuevo_etiqueta">Nuevo usuario:</string>
+    <string name="recuperar_confirmar_etiqueta">Confirmar usuario:</string>
+    <string name="recuperar_usuario_placeholder">@nuevo_usuario</string>
+    <string name="recuperar_error_usuarios">Los usuarios no coinciden</string>
+    <string name="recuperar_siguiente">Siguiente</string>
+    <string name="recuperar_intentar_nuevo">Intentar de nuevo</string>
+    <string name="recuperar_exito_titulo">¡Usuario actualizado!</string>
+    <string name="recuperar_exito_mensaje">¡Listo! Tu usuario fue actualizado</string>
+    <string name="recuperar_exito_check_descripcion">Usuario actualizado correctamente</string>
+    <string name="recuperar_ir_a_login">Ir a iniciar sesión</string>
 </resources>

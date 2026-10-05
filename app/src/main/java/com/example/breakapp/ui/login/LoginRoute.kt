@@ -13,6 +13,7 @@ import com.example.breakapp.R
 /** Conecta el ViewModel con la pantalla de login. */
 @Composable
 fun LoginRoute(
+    onOlvidoUsuario: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: LoginViewModel = viewModel()
 ) {
@@ -32,6 +33,11 @@ fun LoginRoute(
         onUsuarioChange = viewModel::onUsuarioChange,
         onContrasenaChange = viewModel::onContrasenaChange,
         onIngresar = viewModel::onIngresar,
+        // El enlace dice "¿Olvidaste tu usuario?" solo cuando el error es de usuario.
+        // TODO: el caso "¿Olvidaste tu contraseña?" se conecta cuando llegue ese flujo.
+        onOlvido = {
+            if (state.error == ErrorLogin.Usuario) onOlvidoUsuario()
+        },
         modifier = modifier
     )
 }
