@@ -14,6 +14,7 @@ import com.example.breakapp.R
 @Composable
 fun LoginRoute(
     onOlvidoUsuario: () -> Unit,
+    onRegistro: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: LoginViewModel = viewModel()
 ) {
@@ -38,6 +39,7 @@ fun LoginRoute(
         onOlvido = {
             if (state.error == ErrorLogin.Usuario) onOlvidoUsuario()
         },
+        onRegistro = onRegistro,
         modifier = modifier
     )
 }
