@@ -1,0 +1,35 @@
+<resources>
+    <string name="app_name">breakApp</string>
+
+    <!-- Marca / comunes -->
+    <string name="marca_nombre">Break</string>
+    <string name="marca_eslogan">Tu comida universitaria sin filas</string>
+    <string name="pie_universidad">Universidad Jorge Tadeo Lozano • Bogotá</string>
+    <string name="logo_descripcion">Logo de Break</string>
+    <string name="cargando_descripcion">Cargando</string>
+
+    <!-- Bienvenida -->
+    <string name="bienvenida_titulo">¡Bienvenido a Break!</string>
+    <string name="bienvenida_subtitulo">Descubre todo lo que puedes hacer</string>
+    <string name="beneficio_consulta">Consulta antes de pedir</string>
+    <string name="beneficio_pide">Pide con anticipación</string>
+    <string name="beneficio_avisos">Recibe avisos</string>
+    <string name="beneficio_paga">Paga fácil</string>
+    <string name="bienvenida_siguiente">Siguiente</string>
+    <string name="bienvenida_sol_descripcion">Icono de sol</string>
+
+    <!-- Login -->
+    <string name="login_titulo">Inicia Sesión</string>
+    <string name="login_usuario_etiqueta">Usuario:</string>
+    <string name="login_usuario_placeholder">@nombre_usuario</string>
+    <string name="login_contrasena_etiqueta">Contraseña:</string>
+    <string name="login_contrasena_placeholder">•••••••••</string>
+    <string name="login_olvido_contrasena">¿Olvidaste tu contraseña?</string>
+    <string name="login_olvido_usuario">¿Olvidaste tu usuario?</string>
+    <string name="login_error_usuario">¡Usuario incorrecto!</string>
+    <string name="login_error_contrasena">¡Contraseña incorrecta!</string>
+    <string name="login_google">Continuar con Google</string>
+    <string name="login_ingresar">Ingresar</string>
+    <string name="login_registro">No tienes una cuenta? Registrate</string>
+    <string name="login_toast_temporal">Ingreso correcto (mensaje temporal)</string>
+</resources>
