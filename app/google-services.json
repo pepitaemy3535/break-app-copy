@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "139327559359",
-    "project_id": "break-98d31",
-    "storage_bucket": "break-98d31.firebasestorage.app"
+    "project_number": "1008869899909",
+    "project_id": "break-app-3b8a5",
+    "storage_bucket": "break-app-3b8a5.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:139327559359:android:16ae611cbd8a94673f980a",
+        "mobilesdk_app_id": "1:1008869899909:android:65b508ba6ff32cc86ef3ec",
         "android_client_info": {
           "package_name": "com.example.breakapp"
         }
@@ -15,7 +15,26 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyBkTDU3y2O6nGJ2eHNz2axgU9O2nPqkrU0"
+          "current_key": "AIzaSyBinvb1v_kFPLlqrqF_JOpz1tmp6CWLf7o"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1008869899909:android:065e06b7d7cccb486ef3ec",
+        "android_client_info": {
+          "package_name": "com.tadeo.breakapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBinvb1v_kFPLlqrqF_JOpz1tmp6CWLf7o"
         }
       ],
       "services": {

@@ -1,12 +1,15 @@
 package com.example.breakapp.ui.login
 
 import androidx.lifecycle.ViewModel
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
 class LoginViewModel : ViewModel() {
+
+    private val auth: FirebaseAuth = FirebaseAuth.getInstance()
 
     private val _uiState = MutableStateFlow(LoginUiState())
     val uiState: StateFlow<LoginUiState> = _uiState.asStateFlow()
@@ -21,29 +24,41 @@ class LoginViewModel : ViewModel() {
 
     fun onIngresar() {
         val actual = _uiState.value
-        val usuario = actual.usuario.trim()
-        val error = when {
-            usuario.isEmpty() -> ErrorLogin.Usuario
-            actual.contrasena.isEmpty() -> ErrorLogin.Contrasena
-            else -> verificarTemporal(usuario, actual.contrasena)
+        val correo = actual.usuario.trim()
+        val contrasena = actual.contrasena
+
+        // Validaciones locales antes de enviar a Firebase
+        if (correo.isEmpty()) {
+            _uiState.update { it.copy(error = ErrorLogin.Usuario) }
+            return
         }
-        _uiState.update { it.copy(error = error, ingresoExitoso = error == ErrorLogin.Ninguno) }
+
+        if (contrasena.isEmpty()) {
+            _uiState.update { it.copy(error = ErrorLogin.Contrasena) }
+            return
+        }
+
+        // Autenticación con Firebase Auth
+        auth.signInWithEmailAndPassword(correo, contrasena)
+            .addOnSuccessListener {
+                _uiState.update {
+                    it.copy(
+                        ingresoExitoso = true,
+                        error = ErrorLogin.Ninguno
+                    )
+                }
+            }
+            .addOnFailureListener {
+                _uiState.update {
+                    it.copy(
+                        ingresoExitoso = false,
+                        error = ErrorLogin.Contrasena
+                    )
+                }
+            }
     }
 
     fun ingresoConsumido() {
         _uiState.update { it.copy(ingresoExitoso = false) }
-    }
-
-    // TEMPORAL: solo sirve para ver el flujo de error en pantalla.
-    // Se elimina cuando conectemos Firebase Auth (paso de autenticación).
-    private fun verificarTemporal(usuario: String, contrasena: String): ErrorLogin = when {
-        usuario != USUARIO_TEMPORAL -> ErrorLogin.Usuario
-        contrasena != CONTRASENA_TEMPORAL -> ErrorLogin.Contrasena
-        else -> ErrorLogin.Ninguno
-    }
-
-    private companion object {
-        const val USUARIO_TEMPORAL = "break"
-        const val CONTRASENA_TEMPORAL = "Break123"
     }
 }
