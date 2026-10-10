@@ -16,6 +16,7 @@ fun LoginRoute(
     onOlvidoUsuario: () -> Unit,
     onOlvidoContrasena: () -> Unit,
     onRegistro: () -> Unit,
+    onIngresoExitoso: () -> Unit = {},
     modifier: Modifier = Modifier,
     viewModel: LoginViewModel = viewModel()
 ) {
@@ -24,9 +25,8 @@ fun LoginRoute(
 
     LaunchedEffect(state.ingresoExitoso) {
         if (state.ingresoExitoso) {
-            // TEMPORAL: aún no existe la pantalla principal en el diseño.
-            Toast.makeText(contexto, R.string.login_toast_temporal, Toast.LENGTH_SHORT).show()
             viewModel.ingresoConsumido()
+            onIngresoExitoso()
         }
     }
 
