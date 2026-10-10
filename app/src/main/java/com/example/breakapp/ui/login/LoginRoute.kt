@@ -14,6 +14,7 @@ import com.example.breakapp.R
 @Composable
 fun LoginRoute(
     onOlvidoUsuario: () -> Unit,
+    onOlvidoContrasena: () -> Unit,
     onRegistro: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: LoginViewModel = viewModel()
@@ -34,10 +35,10 @@ fun LoginRoute(
         onUsuarioChange = viewModel::onUsuarioChange,
         onContrasenaChange = viewModel::onContrasenaChange,
         onIngresar = viewModel::onIngresar,
-        // El enlace dice "¿Olvidaste tu usuario?" solo cuando el error es de usuario.
-        // TODO: el caso "¿Olvidaste tu contraseña?" se conecta cuando llegue ese flujo.
+        // El enlace dice "¿Olvidaste tu usuario?" solo cuando el error es de usuario;
+        // en los demás casos dice "¿Olvidaste tu contraseña?".
         onOlvido = {
-            if (state.error == ErrorLogin.Usuario) onOlvidoUsuario()
+            if (state.error == ErrorLogin.Usuario) onOlvidoUsuario() else onOlvidoContrasena()
         },
         onRegistro = onRegistro,
         modifier = modifier

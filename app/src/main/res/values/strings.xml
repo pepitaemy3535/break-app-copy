@@ -33,7 +33,7 @@
     <string name="login_registro">No tienes una cuenta? Registrate</string>
     <string name="login_toast_temporal">Ingreso correcto (mensaje temporal)</string>
 
-    <!-- Recuperar usuario (¿Olvidaste tu usuario?) -->
+    <!-- Recuperar usuario (el que ya tenías) -->
     <string name="recuperar_volver_descripcion">Volver</string>
     <string name="recuperar_titulo">¿Olvidaste tu usuario?</string>
     <string name="recuperar_correo_instruccion">Digita el correo con el que ingresaste.</string>
@@ -54,4 +54,42 @@
     <string name="recuperar_exito_mensaje">¡Listo! Tu usuario fue actualizado</string>
     <string name="recuperar_exito_check_descripcion">Usuario actualizado correctamente</string>
     <string name="recuperar_ir_a_login">Ir a iniciar sesión</string>
+
+    <!-- Pantallas nuevas: comunes de recuperación -->
+    <string name="volver_descripcion">Volver</string>
+    <string name="olvido_siguiente">Siguiente</string>
+    <string name="olvido_intentar_de_nuevo">Intentar de nuevo</string>
+    <string name="olvido_correo_instruccion">Digita el correo con el que ingresaste.</string>
+    <string name="olvido_correo_etiqueta">Correo</string>
+    <string name="olvido_correo_placeholder">nombre@gmail.com</string>
+    <string name="olvido_correo_error">El correo digitado no corresponde con el que ingresaste</string>
+    <string name="olvido_codigo_instruccion">Ingresa el código de 6 dígitos que enviamos a tu correo electrónico</string>
+    <string name="olvido_codigo_etiqueta">Código</string>
+    <string name="olvido_codigo_placeholder">Digita el código</string>
+    <string name="olvido_reenviar_codigo">Reenviar código</string>
+    <string name="olvido_codigo_reenviado_temporal">Código reenviado (mensaje temporal)</string>
+    <string name="exito_ir_a_login">Ir a iniciar sesión</string>
+    <string name="exito_check_descripcion">Confirmación</string>
+
+    <!-- Pantallas nuevas: olvidé mi usuario -->
+    <string name="olvido_usuario_titulo">¿Olvidaste tu usuario?</string>
+    <string name="olvido_nuevo_usuario_etiqueta">Nuevo usuario:</string>
+    <string name="olvido_confirmar_usuario_etiqueta">Confirmar usuario:</string>
+    <string name="olvido_usuario_placeholder">@nuevo_usuario</string>
+    <string name="olvido_usuarios_no_coinciden">Los usuarios no coinciden</string>
+    <string name="exito_titulo">¡Usuario actualizado!</string>
+    <string name="exito_mensaje">¡Listo! Tu usuario fue actualizado</string>
+
+    <!-- Pantallas nuevas: olvidé mi contraseña -->
+    <string name="olvido_contrasena_titulo">¿Olvidaste tu contraseña?</string>
+    <string name="olvido_guardar">Guardar</string>
+    <string name="olvido_nueva_contrasena_etiqueta">Nueva contraseña:</string>
+    <string name="olvido_confirmar_contrasena_etiqueta">Confirmar contraseña:</string>
+    <string name="olvido_contrasenas_no_coinciden">Las contraseñas no coinciden</string>
+    <string name="olvido_contrasena_debil">La contraseña debe tener mínimo 8 caracteres, con mayúscula, minúscula y número</string>
+    <string name="fortaleza_debil">Débil</string>
+    <string name="fortaleza_media">Media</string>
+    <string name="fortaleza_fuerte">Fuerte</string>
+    <string name="exito_contrasena_titulo">¡Contraseña actualizada!</string>
+    <string name="exito_contrasena_mensaje">¡Listo! Tu contraseña fue actualizada</string>
 </resources>

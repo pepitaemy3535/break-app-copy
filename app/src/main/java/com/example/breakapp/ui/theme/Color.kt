@@ -20,3 +20,12 @@ val BordeBeneficioConsulta = Color(0xFF9C7646)
 val BordeBeneficioPide = Color(0xFFA88043)
 val BordeBeneficioAvisos = Color(0xFFA27B44)
 val BordeBeneficioPaga = Color(0xFF977147)
+
+val BordeValidoBrillante = Color(0xFF2BFF20)
+val TextoError = Color(0xFFF03012)
+
+// Indicador de fortaleza de contraseña
+val FortalezaDebil = Color(0xFFF3674C)
+val FortalezaMedia = Color(0xFFF6B948)
+val FortalezaFuerte = Color(0xFF4F8A5B)
+val FortalezaApagado = Color(0xFFE0E0E0)

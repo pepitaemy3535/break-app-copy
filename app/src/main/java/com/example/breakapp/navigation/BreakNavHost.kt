@@ -7,6 +7,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.breakapp.ui.login.LoginRoute
+import com.example.breakapp.ui.olvidocontrasena.OlvidoContrasenaRoute
 import com.example.breakapp.ui.recuperarusuario.RecuperarUsuarioRoute
 import com.example.breakapp.ui.registro.RegistroRoute
 import com.example.breakapp.ui.splash.SplashScreen
@@ -17,6 +18,7 @@ object Rutas {
     const val BIENVENIDA = "bienvenida"
     const val LOGIN = "login"
     const val RECUPERAR_USUARIO = "recuperar_usuario"
+    const val OLVIDO_CONTRASENA = "olvido_contrasena"
     const val REGISTRO = "registro"
 }
 
@@ -46,6 +48,7 @@ fun BreakNavHost(
         composable(Rutas.LOGIN) {
             LoginRoute(
                 onOlvidoUsuario = { navController.navigate(Rutas.RECUPERAR_USUARIO) },
+                onOlvidoContrasena = { navController.navigate(Rutas.OLVIDO_CONTRASENA) },
                 onRegistro = { navController.navigate(Rutas.REGISTRO) }
             )
         }
@@ -53,6 +56,18 @@ fun BreakNavHost(
             // Salir del flujo (X en el primer paso, atrás o "Ir a iniciar sesión") vuelve al login.
             RecuperarUsuarioRoute(
                 onSalir = { navController.popBackStack(Rutas.LOGIN, inclusive = false) }
+            )
+        }
+        composable(Rutas.OLVIDO_CONTRASENA) {
+            OlvidoContrasenaRoute(
+                // La X del primer paso o "atrás" vuelven al login tal como estaba.
+                onSalir = { navController.popBackStack(Rutas.LOGIN, inclusive = false) },
+                // "Ir a iniciar sesión": se recrea el login para que no conserve errores.
+                onIrALogin = {
+                    navController.navigate(Rutas.LOGIN) {
+                        popUpTo(Rutas.LOGIN) { inclusive = true }
+                    }
+                }
             )
         }
         composable(Rutas.REGISTRO) {
