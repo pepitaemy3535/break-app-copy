@@ -67,11 +67,13 @@ class RegistroViewModel : ViewModel() {
                     return@addOnSuccessListener
                 }
 
-                // 2. Guardar datos del usuario en Cloud Firestore
+                // 2. Guardar datos del usuario en Cloud Firestore con campos iniciales para Mi Perfil
                 val datosUsuario = hashMapOf(
                     "uid" to userId,
                     "correo" to state.correo.trim(),
                     "usuario" to state.usuario.trim(),
+                    "direccion" to "Cra 4 #22-61, Bogotá",
+                    "universidad" to "Universidad Jorge Tadeo Lozano • Bogotá",
                     "rol" to "estudiante",
                     "fechaRegistro" to System.currentTimeMillis()
                 )

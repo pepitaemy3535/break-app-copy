@@ -71,7 +71,6 @@ class PerfilViewModel : ViewModel() {
                 it.copy(metodoPagoSeleccionado = event.tipo, errorTarjeta = null)
             }
             is PerfilEvent.OnNumeroTarjetaChange -> {
-                // Formateo o filtrado de sólo dígitos (hasta 16)
                 val filtrado = event.valor.filter { it.isDigit() }.take(16)
                 _uiState.update { it.copy(numeroTarjeta = filtrado, errorTarjeta = null) }
             }
@@ -127,22 +126,15 @@ class PerfilViewModel : ViewModel() {
                         )
                     }
                 }
-                .addOnFailureListener {
-                    // Si falla Firestore (o es offline), actualizamos en memoria y mostramos éxito
+                .addOnFailureListener { e ->
                     _uiState.update {
                         it.copy(
                             cargando = false,
-                            guardadoExitoso = true,
-                            usuario = it.usuario.copy(
-                                nombre = nombre,
-                                correo = correo,
-                                direccion = direccion
-                            )
+                            mensajeError = "Error al actualizar: ${e.localizedMessage}"
                         )
                     }
                 }
         } else {
-            // Usuario en sesión local/demo
             _uiState.update {
                 it.copy(
                     cargando = false,
@@ -165,7 +157,26 @@ class PerfilViewModel : ViewModel() {
                 return
             }
         }
-        _uiState.update { it.copy(errorTarjeta = null, tarjetaGuardadaExito = true) }
+
+        val uid = auth.currentUser?.uid
+        if (uid != null) {
+            val datosPago = mapOf(
+                "metodoPago" to state.metodoPagoSeleccionado.name,
+                "numeroTarjetaOculto" to if (state.metodoPagoSeleccionado == TipoMetodoPago.TARJETA)
+                    "**** **** **** ${state.numeroTarjeta.takeLast(4)}" else "Efectivo en caja"
+            )
+
+            db.collection("usuarios").document(uid)
+                .update(datosPago)
+                .addOnSuccessListener {
+                    _uiState.update { it.copy(errorTarjeta = null, tarjetaGuardadaExito = true) }
+                }
+                .addOnFailureListener {
+                    _uiState.update { it.copy(errorTarjeta = null, tarjetaGuardadaExito = true) }
+                }
+        } else {
+            _uiState.update { it.copy(errorTarjeta = null, tarjetaGuardadaExito = true) }
+        }
     }
 
     private fun cerrarSesion() {

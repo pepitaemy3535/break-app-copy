@@ -102,7 +102,13 @@ fun BreakNavHost(
         }
         composable(Rutas.REGISTRO) {
             RegistroRoute(
-                onIrALogin = { navController.popBackStack(Rutas.LOGIN, inclusive = false) }
+                onIrALogin = {
+                    // Al registrarse con éxito, recargamos los datos y pasamos directo a Perfil
+                    perfilViewModel.cargarDatosUsuario()
+                    navController.navigate(Rutas.PERFIL) {
+                        popUpTo(Rutas.LOGIN) { inclusive = true }
+                    }
+                }
             )
         }
 
