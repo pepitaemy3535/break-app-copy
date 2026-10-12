@@ -1,11 +1,16 @@
 package com.example.breakapp.ui.perfil
 
+import android.net.Uri
+
 sealed interface PerfilEvent {
     // Edición de perfil
     data class OnNombreEditChange(val valor: String) : PerfilEvent
     data class OnCorreoEditChange(val valor: String) : PerfilEvent
     data class OnDireccionEditChange(val valor: String) : PerfilEvent
     object OnGuardarCambiosPerfil : PerfilEvent
+
+    // Foto de perfil
+    data class OnSubirFotoPerfil(val uri: Uri) : PerfilEvent // NUEVO
 
     // Métodos de pago
     data class OnMetodoPagoChange(val tipo: TipoMetodoPago) : PerfilEvent
