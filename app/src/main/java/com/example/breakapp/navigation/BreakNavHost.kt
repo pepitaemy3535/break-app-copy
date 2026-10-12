@@ -9,6 +9,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.breakapp.main.BreakMainScreen
 import com.example.breakapp.ui.login.LoginRoute
 import com.example.breakapp.ui.olvidocontrasena.OlvidoContrasenaRoute
 import com.example.breakapp.ui.perfil.ConfiguracionScreen
@@ -43,6 +44,9 @@ object Rutas {
     const val NOTIFICACIONES = "notificaciones"
     const val PRIVACIDAD = "privacidad"
     const val AYUDA_SOPORTE = "ayuda_soporte"
+
+    // Módulo 3: Pantallas principales (Inicio, Restaurantes, Búsqueda)
+    const val PRINCIPAL = "principal"
 }
 
 @Composable
@@ -79,7 +83,8 @@ fun BreakNavHost(
                 onRegistro = { navController.navigate(Rutas.REGISTRO) },
                 onIngresoExitoso = {
                     perfilViewModel.cargarDatosUsuario()
-                    navController.navigate(Rutas.PERFIL) {
+                    // Después del login el usuario llega a Inicio (módulo 3)
+                    navController.navigate(Rutas.PRINCIPAL) {
                         popUpTo(Rutas.LOGIN) { inclusive = true }
                     }
                 }
@@ -103,12 +108,19 @@ fun BreakNavHost(
         composable(Rutas.REGISTRO) {
             RegistroRoute(
                 onIrALogin = {
-                    // Al registrarse con éxito, recargamos los datos y pasamos directo a Perfil
+                    // Al registrarse con éxito, recargamos los datos y pasamos directo a Inicio
                     perfilViewModel.cargarDatosUsuario()
-                    navController.navigate(Rutas.PERFIL) {
+                    navController.navigate(Rutas.PRINCIPAL) {
                         popUpTo(Rutas.LOGIN) { inclusive = true }
                     }
                 }
+            )
+        }
+
+        // --- FLUJO MÓDULO 3 (INICIO, RESTAURANTES, BÚSQUEDA) ---
+        composable(Rutas.PRINCIPAL) {
+            BreakMainScreen(
+                onProfileClick = { navController.navigate(Rutas.PERFIL) }
             )
         }
 
