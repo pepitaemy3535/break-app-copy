@@ -8,6 +8,7 @@ enum class TipoMetodoPago {
 data class PerfilUiState(
     val usuario: UsuarioPerfil = UsuarioPerfil(),
     val cargando: Boolean = false,
+    val cargandoFoto: Boolean = false, // NUEVO: Indicador específico para cuando sube la foto
     val guardadoExitoso: Boolean = false,
     val mensajeError: String? = null,
 

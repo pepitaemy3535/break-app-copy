@@ -1,5 +1,8 @@
 package com.example.breakapp.ui.perfil
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -10,17 +13,21 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import com.example.breakapp.R
 import com.example.breakapp.ui.components.PieUniversidad
 import com.example.breakapp.ui.perfil.components.ConfirmacionAccionDialog
@@ -28,6 +35,7 @@ import com.example.breakapp.ui.perfil.components.EditarFotoDialog
 import com.example.breakapp.ui.perfil.components.PerfilMenuItem
 import com.example.breakapp.ui.perfil.components.PerfilTopBar
 import com.example.breakapp.ui.theme.Ambar
+import com.example.breakapp.ui.theme.BreakAppTheme
 import com.example.breakapp.ui.theme.Fondo
 
 @Composable
@@ -39,6 +47,14 @@ fun PerfilScreen(
     onNavigateToConfiguracion: () -> Unit,
     onCerrarSesionCompleto: () -> Unit
 ) {
+    val galleryLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        uri?.let {
+            onEvent(PerfilEvent.OnSubirFotoPerfil(it))
+        }
+    }
+
     if (state.mostrarDialogoCerrarSesion) {
         ConfirmacionAccionDialog(
             titulo = "¿Seguro que quieres cerrar sesión?",
@@ -54,8 +70,14 @@ fun PerfilScreen(
 
     if (state.mostrarDialogoFoto) {
         EditarFotoDialog(
-            onTomarFoto = { onEvent(PerfilEvent.SetMostrarDialogoFoto(false)) },
-            onElegirGaleria = { onEvent(PerfilEvent.SetMostrarDialogoFoto(false)) },
+            onTomarFoto = {
+                onEvent(PerfilEvent.SetMostrarDialogoFoto(false))
+                galleryLauncher.launch("image/*")
+            },
+            onElegirGaleria = {
+                onEvent(PerfilEvent.SetMostrarDialogoFoto(false))
+                galleryLauncher.launch("image/*")
+            },
             onDismiss = { onEvent(PerfilEvent.SetMostrarDialogoFoto(false)) }
         )
     }
@@ -70,12 +92,10 @@ fun PerfilScreen(
             .padding(bottom = 24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // TopBar superior
         PerfilTopBar(titulo = "Mi perfil")
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // Avatar con botón de editar
         Box(contentAlignment = Alignment.BottomEnd) {
             Box(
                 modifier = Modifier
@@ -85,11 +105,23 @@ fun PerfilScreen(
                     .clickable { onEvent(PerfilEvent.SetMostrarDialogoFoto(true)) },
                 contentAlignment = Alignment.Center
             ) {
-                Image(
-                    painter = painterResource(id = R.drawable.ic_usuario),
-                    contentDescription = "Avatar",
-                    modifier = Modifier.size(54.dp)
-                )
+                if (state.cargandoFoto) {
+                    CircularProgressIndicator(color = Ambar, modifier = Modifier.size(36.dp))
+                } else if (!state.usuario.fotoUrl.isNullOrEmpty()) {
+                    // Aquí cargamos la foto de perfil dinámica con Coil
+                    AsyncImage(
+                        model = state.usuario.fotoUrl,
+                        contentDescription = "Foto de perfil",
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                } else {
+                    Image(
+                        painter = painterResource(id = R.drawable.ic_usuario),
+                        contentDescription = "Avatar",
+                        modifier = Modifier.size(54.dp)
+                    )
+                }
             }
             Box(
                 modifier = Modifier
@@ -110,7 +142,6 @@ fun PerfilScreen(
 
         Spacer(modifier = Modifier.height(14.dp))
 
-        // Nombre de usuario y universidad
         Text(
             text = state.usuario.nombre,
             color = Color.White,
@@ -126,7 +157,6 @@ fun PerfilScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Caja de correo electrónico
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -152,7 +182,6 @@ fun PerfilScreen(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Lista de opciones de navegación
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -162,7 +191,7 @@ fun PerfilScreen(
             PerfilMenuItem(
                 titulo = "Mis pedidos",
                 icono = Icons.Default.ShoppingBag,
-                onClick = { /* Navegación a pedidos futuros */ }
+                onClick = {}
             )
             PerfilMenuItem(
                 titulo = "Direcciones",
@@ -191,10 +220,10 @@ fun PerfilScreen(
     }
 }
 
-@androidx.compose.ui.tooling.preview.Preview(showBackground = true, widthDp = 412, heightDp = 917)
+@Preview(showBackground = true, widthDp = 412, heightDp = 917)
 @Composable
 private fun PerfilScreenPreview() {
-    com.example.breakapp.ui.theme.BreakAppTheme {
+    BreakAppTheme {
         PerfilScreen(
             state = PerfilUiState(),
             onEvent = {},
@@ -206,25 +235,10 @@ private fun PerfilScreenPreview() {
     }
 }
 
-@androidx.compose.ui.tooling.preview.Preview(showBackground = true, widthDp = 412, heightDp = 917)
-@Composable
-private fun PerfilCerrarSesionPreview() {
-    com.example.breakapp.ui.theme.BreakAppTheme {
-        PerfilScreen(
-            state = PerfilUiState(mostrarDialogoCerrarSesion = true),
-            onEvent = {},
-            onNavigateToEditarPerfil = {},
-            onNavigateToMetodosPago = {},
-            onNavigateToConfiguracion = {},
-            onCerrarSesionCompleto = {}
-        )
-    }
-}
-
-@androidx.compose.ui.tooling.preview.Preview(showBackground = true, widthDp = 412, heightDp = 917)
+@Preview(showBackground = true, widthDp = 412, heightDp = 917)
 @Composable
 private fun PerfilEditarFotoPreview() {
-    com.example.breakapp.ui.theme.BreakAppTheme {
+    BreakAppTheme {
         PerfilScreen(
             state = PerfilUiState(mostrarDialogoFoto = true),
             onEvent = {},

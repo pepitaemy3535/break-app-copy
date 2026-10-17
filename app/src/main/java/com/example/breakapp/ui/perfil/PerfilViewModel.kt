@@ -1,9 +1,11 @@
 package com.example.breakapp.ui.perfil
 
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -14,6 +16,7 @@ class PerfilViewModel : ViewModel() {
 
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
     private val db: FirebaseFirestore = FirebaseFirestore.getInstance()
+    private val storage: FirebaseStorage = FirebaseStorage.getInstance()
 
     private val _uiState = MutableStateFlow(PerfilUiState())
     val uiState: StateFlow<PerfilUiState> = _uiState.asStateFlow()
@@ -66,6 +69,8 @@ class PerfilViewModel : ViewModel() {
             is PerfilEvent.OnCorreoEditChange -> _uiState.update { it.copy(correoEdit = event.valor) }
             is PerfilEvent.OnDireccionEditChange -> _uiState.update { it.copy(direccionEdit = event.valor) }
             PerfilEvent.OnGuardarCambiosPerfil -> guardarCambiosPerfil()
+
+            is PerfilEvent.OnSubirFotoPerfil -> subirFotoAStorage(event.uri)
 
             is PerfilEvent.OnMetodoPagoChange -> _uiState.update {
                 it.copy(metodoPagoSeleccionado = event.tipo, errorTarjeta = null)
@@ -134,19 +139,49 @@ class PerfilViewModel : ViewModel() {
                         )
                     }
                 }
-        } else {
-            _uiState.update {
-                it.copy(
-                    cargando = false,
-                    guardadoExitoso = true,
-                    usuario = it.usuario.copy(
-                        nombre = nombre,
-                        correo = correo,
-                        direccion = direccion
-                    )
-                )
-            }
         }
+    }
+
+    private fun subirFotoAStorage(uri: Uri) {
+        val uid = auth.currentUser?.uid ?: return
+        _uiState.update { it.copy(cargandoFoto = true) }
+
+        val referenciaStorage = storage.reference.child("perfiles/$uid.jpg")
+
+        referenciaStorage.putFile(uri)
+            .addOnSuccessListener {
+                referenciaStorage.downloadUrl.addOnSuccessListener { downloadUri ->
+                    val urlImagen = downloadUri.toString()
+
+                    db.collection("usuarios").document(uid)
+                        .update("fotoUrl", urlImagen)
+                        .addOnSuccessListener {
+                            _uiState.update { state ->
+                                state.copy(
+                                    cargandoFoto = false,
+                                    mostrarDialogoFoto = false,
+                                    usuario = state.usuario.copy(fotoUrl = urlImagen)
+                                )
+                            }
+                        }
+                        .addOnFailureListener { e ->
+                            _uiState.update {
+                                it.copy(
+                                    cargandoFoto = false,
+                                    mensajeError = "Error al guardar URL: ${e.localizedMessage}"
+                                )
+                            }
+                        }
+                }
+            }
+            .addOnFailureListener { e ->
+                _uiState.update {
+                    it.copy(
+                        cargandoFoto = false,
+                        mensajeError = "Error al subir imagen: ${e.localizedMessage}"
+                    )
+                }
+            }
     }
 
     private fun validarYGuardarMetodoPago() {
@@ -174,8 +209,6 @@ class PerfilViewModel : ViewModel() {
                 .addOnFailureListener {
                     _uiState.update { it.copy(errorTarjeta = null, tarjetaGuardadaExito = true) }
                 }
-        } else {
-            _uiState.update { it.copy(errorTarjeta = null, tarjetaGuardadaExito = true) }
         }
     }
 
