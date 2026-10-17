@@ -33,7 +33,7 @@ object Rutas {
     const val LOGIN = "login"
     const val RECUPERAR_USUARIO = "recuperar_usuario"
     const val OLVIDO_CONTRASENA = "olvido_contrasena"
-    const val REGISTRO = "registro"
+    const val REGISTRO = "com/example/breakapp/ui/registro"
 
     // Módulo 2: Perfil y Configuración
     const val PERFIL = "perfil"
