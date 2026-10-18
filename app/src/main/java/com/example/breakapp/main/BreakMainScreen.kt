@@ -26,16 +26,26 @@ import com.example.breakapp.main.home.RestaurantsScreen
 import com.example.breakapp.main.search.SearchScreen
 import com.example.breakapp.main.theme.BreakColors
 
+import com.example.breakapp.main.cart.CartScreen
+import com.example.breakapp.main.data.Order
+import com.example.breakapp.main.orders.OrdersScreen
+
 /**
  * Contenedor de las pantallas principales (lo que ve el usuario después de iniciar sesión):
- * Inicio, Cafeterías y Restaurantes, Búsqueda + la barra inferior.
+ * Inicio, Cafeterías y Restaurantes, Búsqueda, Carrito, Pedidos + la barra inferior.
  *
- * @param onProfileClick se llama al tocar "Perfil". Aquí conectarás el módulo de Perfil.
+ * @param onProfileClick se llama al tocar "Perfil".
+ * @param onRestaurantClick se llama al tocar un restaurante.
+ * @param onOrderConfirmed se llama cuando se crea un pedido.
  */
 @Composable
 fun BreakMainScreen(
     modifier: Modifier = Modifier,
-    onProfileClick: () -> Unit = {}
+    onProfileClick: () -> Unit = {},
+    onRestaurantClick: (String) -> Unit = {},
+    onOrderConfirmed: (Order) -> Unit = {},
+    onInsufficientFunds: (Order) -> Unit = {},
+    onCardDeclined: (Order) -> Unit = {}
 ) {
     var tab by rememberSaveable { mutableStateOf(MainTab.INICIO) }
     var showRestaurants by rememberSaveable { mutableStateOf(false) }
@@ -43,9 +53,11 @@ fun BreakMainScreen(
 
     BreakSystemBars()
 
-    // Atrás: Restaurantes -> Inicio, Búsqueda -> Inicio.
+    // Atrás: Restaurantes -> Inicio, Búsqueda -> Inicio, Carrito -> Inicio, Pedidos -> Inicio.
     BackHandler(enabled = tab == MainTab.INICIO && showRestaurants) { showRestaurants = false }
     BackHandler(enabled = tab == MainTab.BUSCAR) { tab = MainTab.INICIO }
+    BackHandler(enabled = tab == MainTab.CARRITO) { tab = MainTab.INICIO }
+    BackHandler(enabled = tab == MainTab.PEDIDOS) { tab = MainTab.INICIO }
 
     Column(
         modifier = modifier
@@ -61,20 +73,31 @@ fun BreakMainScreen(
             when (tab) {
                 MainTab.INICIO ->
                     if (showRestaurants) {
-                        RestaurantsScreen()
+                        RestaurantsScreen(onTiendaClick = onRestaurantClick)
                     } else {
                         HomeScreen(
                             onSearchClick = {
                                 focusSearchOnOpen = true
                                 tab = MainTab.BUSCAR
                             },
-                            onSeeAllRestaurants = { showRestaurants = true }
+                            onSeeAllRestaurants = { showRestaurants = true },
+                            onRestaurantClick = { rest -> onRestaurantClick(rest.id) }
                         )
                     }
 
                 MainTab.BUSCAR -> SearchScreen(autoFocus = focusSearchOnOpen)
 
-                // Carrito, Pedidos y Perfil no abren pantalla aquí.
+                MainTab.CARRITO -> CartScreen(
+                    onBack = { tab = MainTab.INICIO },
+                    onOrderConfirmed = onOrderConfirmed,
+                    onInsufficientFunds = onInsufficientFunds,
+                    onCardDeclined = onCardDeclined
+                )
+
+                MainTab.PEDIDOS -> OrdersScreen(
+                    onBackToHome = { tab = MainTab.INICIO }
+                )
+
                 else -> Unit
             }
         }
@@ -93,8 +116,9 @@ fun BreakMainScreen(
                         tab = MainTab.BUSCAR
                     }
 
-                    // Sin diseño todavía: el botón se ve pero no abre nada.
-                    MainTab.CARRITO, MainTab.PEDIDOS -> Unit
+                    MainTab.CARRITO -> tab = MainTab.CARRITO
+
+                    MainTab.PEDIDOS -> tab = MainTab.PEDIDOS
 
                     MainTab.PERFIL -> onProfileClick()
                 }

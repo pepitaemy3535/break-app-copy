@@ -9,7 +9,15 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
 import com.example.breakapp.main.BreakMainScreen
+import com.example.breakapp.main.cart.CartScreen
+import com.example.breakapp.main.cart.PaymentErrorScreen
+import com.example.breakapp.main.cart.PaymentErrorType
+import com.example.breakapp.main.orders.OrderConfirmationScreen
+import com.example.breakapp.main.orders.OrderTrackingScreen
+import com.example.breakapp.main.restaurant.RestaurantDetailScreen
 import com.example.breakapp.ui.login.LoginRoute
 import com.example.breakapp.ui.olvidocontrasena.OlvidoContrasenaRoute
 import com.example.breakapp.ui.perfil.ConfiguracionScreen
@@ -47,6 +55,18 @@ object Rutas {
 
     // Módulo 3: Pantallas principales (Inicio, Restaurantes, Búsqueda)
     const val PRINCIPAL = "principal"
+
+    // Módulo 4: Menú de Restaurante, Carrito y Pedidos
+    const val RESTAURANTE_DETALLE = "restaurante_detalle/{restaurantId}"
+    const val CARRITO = "carrito"
+    const val CONFIRMACION_PEDIDO = "confirmacion_pedido/{orderId}"
+    const val SEGUIMIENTO_PEDIDO = "seguimiento_pedido/{orderId}"
+    const val PAGO_RECHAZADO = "pago_rechazado"
+    const val FONDOS_INSUFICIENTES = "fondos_insuficientes"
+
+    fun restauranteDetalle(restaurantId: String) = "restaurante_detalle/$restaurantId"
+    fun confirmacionPedido(orderId: String) = "confirmacion_pedido/$orderId"
+    fun seguimientoPedido(orderId: String) = "seguimiento_pedido/$orderId"
 }
 
 @Composable
@@ -120,7 +140,99 @@ fun BreakNavHost(
         // --- FLUJO MÓDULO 3 (INICIO, RESTAURANTES, BÚSQUEDA) ---
         composable(Rutas.PRINCIPAL) {
             BreakMainScreen(
-                onProfileClick = { navController.navigate(Rutas.PERFIL) }
+                onProfileClick = { navController.navigate(Rutas.PERFIL) },
+                onRestaurantClick = { restaurantId ->
+                    navController.navigate(Rutas.restauranteDetalle(restaurantId))
+                },
+                onOrderConfirmed = { order ->
+                    navController.navigate(Rutas.confirmacionPedido(order.id))
+                },
+                onInsufficientFunds = {
+                    navController.navigate(Rutas.FONDOS_INSUFICIENTES)
+                },
+                onCardDeclined = {
+                    navController.navigate(Rutas.PAGO_RECHAZADO)
+                }
+            )
+        }
+
+        // --- FLUJO MÓDULO 4 (MENÚ RESTAURANTE, CARRITO, PEDIDOS) ---
+        composable(
+            route = Rutas.RESTAURANTE_DETALLE,
+            arguments = listOf(navArgument("restaurantId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val restaurantId = backStackEntry.arguments?.getString("restaurantId") ?: ""
+            RestaurantDetailScreen(
+                restaurantId = restaurantId,
+                onBack = { navController.popBackStack() },
+                onNavigateToCart = { navController.navigate(Rutas.CARRITO) }
+            )
+        }
+
+        composable(Rutas.CARRITO) {
+            CartScreen(
+                onBack = { navController.popBackStack() },
+                onOrderConfirmed = { order ->
+                    navController.navigate(Rutas.confirmacionPedido(order.id)) {
+                        popUpTo(Rutas.PRINCIPAL) { inclusive = false }
+                    }
+                },
+                onInsufficientFunds = {
+                    navController.navigate(Rutas.FONDOS_INSUFICIENTES)
+                },
+                onCardDeclined = {
+                    navController.navigate(Rutas.PAGO_RECHAZADO)
+                }
+            )
+        }
+
+        composable(Rutas.PAGO_RECHAZADO) {
+            PaymentErrorScreen(
+                errorType = PaymentErrorType.RECHAZADO,
+                onPrimaryAction = { navController.popBackStack() },
+                onSecondaryAction = { navController.popBackStack() },
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(Rutas.FONDOS_INSUFICIENTES) {
+            PaymentErrorScreen(
+                errorType = PaymentErrorType.FONDOS_INSUFICIENTES,
+                onPrimaryAction = { navController.popBackStack() },
+                onSecondaryAction = {
+                    navController.navigate(Rutas.PRINCIPAL) {
+                        popUpTo(Rutas.PRINCIPAL) { inclusive = true }
+                    }
+                },
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(
+            route = Rutas.CONFIRMACION_PEDIDO,
+            arguments = listOf(navArgument("orderId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val orderId = backStackEntry.arguments?.getString("orderId") ?: ""
+            OrderConfirmationScreen(
+                orderId = orderId,
+                onNavigateToTracking = {
+                    navController.navigate(Rutas.seguimientoPedido(orderId)) {
+                        popUpTo(Rutas.PRINCIPAL) { inclusive = false }
+                    }
+                }
+            )
+        }
+
+        composable(
+            route = Rutas.SEGUIMIENTO_PEDIDO,
+            arguments = listOf(navArgument("orderId") { type = NavType.StringType })
+        ) {
+            OrderTrackingScreen(
+                onBack = {
+                    navController.navigate(Rutas.PRINCIPAL) {
+                        popUpTo(Rutas.PRINCIPAL) { inclusive = true }
+                    }
+                }
             )
         }
 

@@ -16,7 +16,10 @@ data class Restaurant(
     val name: String,
     val rating: Double,
     val timeRange: String,
-    @DrawableRes val logoRes: Int
+    @DrawableRes val logoRes: Int,
+    val schedule: String = "Lun - Vie • 7:00 AM - 8:00 PM",
+    val location: String = "Módulo 2 y 7 en Planta Baja Ext. 1933",
+    @DrawableRes val bannerRes: Int = logoRes
 )
 
 data class Product(
@@ -31,7 +34,8 @@ data class Product(
     val category: FoodCategory,
     val restaurantId: String,
     /** true = aparece en las tarjetas del Inicio. Todos los productos entran a la búsqueda. */
-    val featured: Boolean = true
+    val featured: Boolean = true,
+    val calories: String = ""
 )
 
 /** Un producto encontrado junto con el restaurante que lo vende. */
