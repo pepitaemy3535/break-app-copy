@@ -22,7 +22,7 @@ import androidx.core.view.WindowCompat
 import com.example.breakapp.main.components.BreakBottomBar
 import com.example.breakapp.main.components.MainTab
 import com.example.breakapp.main.home.HomeScreen
-import com.example.breakapp.main.home.RestaurantsScreen
+import com.example.breakapp.main.restaurant.RestaurantsScreen
 import com.example.breakapp.main.search.SearchScreen
 import com.example.breakapp.main.theme.BreakColors
 
@@ -85,7 +85,10 @@ fun BreakMainScreen(
                         )
                     }
 
-                MainTab.BUSCAR -> SearchScreen(autoFocus = focusSearchOnOpen)
+                MainTab.BUSCAR -> SearchScreen(
+                    autoFocus = focusSearchOnOpen,
+                    onRestaurantClick = onRestaurantClick // <--- ¡Conectado aquí!
+                )
 
                 MainTab.CARRITO -> CartScreen(
                     onBack = { tab = MainTab.INICIO },

@@ -146,7 +146,7 @@ fun RestaurantDetailScreen(
                     )
                 }
 
-                // --- BANNER FOTOGRÁFICO ---
+                // --- BANNER FOTOGRÁFICO DE LA TIENDA ---
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -283,7 +283,7 @@ fun RestaurantDetailScreen(
             }
         }
 
-        // --- BARRA FLOTANTE "AGREGAR AL CARRITO" (Vista 2 del Figma) ---
+        // --- BARRA FLOTANTE "AGREGAR AL CARRITO" ---
         AnimatedVisibility(
             visible = cartState.totalItemsCount > 0,
             enter = slideInVertically(initialOffsetY = { it }),
@@ -343,8 +343,9 @@ private fun ProductGridCard(
             .background(cardColor)
             .padding(10.dp)
     ) {
+        // Carga directa de la imagen local del producto
         Image(
-            painter = painterResource(product.imageRes),
+            painter = painterResource(if (product.imageRes != 0) product.imageRes else R.drawable.main_img_food_chocoramo),
             contentDescription = product.name,
             contentScale = ContentScale.Crop,
             modifier = Modifier

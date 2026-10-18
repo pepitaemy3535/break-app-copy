@@ -22,7 +22,7 @@ object CartRepository {
     private val db = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
 
-    fun setRestaurant(id: String, name: String, location: String, estimatedTime: String = "3 - 5 min") {
+    fun setRestaurant(id: String, name: String, location: String, estimatedTime: String = "3-5 min") {
         if (_cartState.value.restaurantId != id && _cartState.value.items.isNotEmpty()) {
             // Si cambia de restaurante, limpiamos el carrito previo
             _cartState.value = CartState(
@@ -106,7 +106,7 @@ object CartRepository {
         _orderHistory.update { listOf(newOrder) + it }
         clearCart()
 
-        // Guardado opcional en Firestore
+        // Registro de la orden en Firestore
         saveOrderToFirestore(newOrder)
 
         return newOrder
@@ -130,8 +130,8 @@ object CartRepository {
         db.collection("pedidos")
             .document(order.id)
             .set(orderData)
-            .addOnSuccessListener { /* Pedido registrado en Firestore */ }
-            .addOnFailureListener { /* Fallback silencioso a local */ }
+            .addOnSuccessListener { /* Pedido registrado exitosamente en Firestore */ }
+            .addOnFailureListener { /* Fallback silencioso en caso de error de red */ }
     }
 
     fun advanceOrderStatus(status: OrderStatus) {
