@@ -17,6 +17,8 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 
+import com.example.breakapp.main.data.StockRepository
+
 data class RestaurantDetailUiState(
     val restaurant: Restaurant? = null,
     val allProducts: List<Product> = emptyList(),
@@ -55,8 +57,9 @@ class RestaurantDetailViewModel(
     val uiState: StateFlow<RestaurantDetailUiState> = _uiState.asStateFlow()
 
     val cartState: StateFlow<CartState> = cartRepo.cartState
+    val stockMap: StateFlow<Map<String, Int>> = StockRepository.stockMap
 
-    fun loadRestaurant(restaurantId: String) {
+    fun loadRestaurant(restaurantId: String, initialSearch: String? = null) {
         _uiState.update { it.copy(isLoading = true) }
         val rest = repository.restaurantById(restaurantId) ?: repository.restaurants().first()
         val products = repository.productsForRestaurant(rest.id)
@@ -72,6 +75,8 @@ class RestaurantDetailViewModel(
             it.copy(
                 restaurant = rest,
                 allProducts = products,
+                searchQuery = initialSearch ?: "",
+                selectedCategory = "Todos",
                 isLoading = false
             )
         }
@@ -87,7 +92,10 @@ class RestaurantDetailViewModel(
 
     fun increaseQuantity(product: Product) {
         val currentQty = cartState.value.items.find { it.product.id == product.id }?.quantity ?: 0
-        cartRepo.addItem(product, currentQty + 1)
+        val available = StockRepository.getStock(product.id)
+        if (currentQty < available) {
+            cartRepo.addItem(product, currentQty + 1)
+        }
     }
 
     fun decreaseQuantity(product: Product) {
@@ -99,5 +107,9 @@ class RestaurantDetailViewModel(
 
     fun getProductQuantity(productId: String): Int {
         return cartState.value.items.find { it.product.id == productId }?.quantity ?: 0
+    }
+
+    fun getProductStock(productId: String): Int {
+        return stockMap.value[productId] ?: StockRepository.getStock(productId)
     }
 }

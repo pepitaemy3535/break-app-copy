@@ -30,12 +30,15 @@ import com.example.breakapp.main.cart.CartScreen
 import com.example.breakapp.main.data.Order
 import com.example.breakapp.main.orders.OrdersScreen
 
+import com.example.breakapp.main.data.Product
+
 /**
  * Contenedor de las pantallas principales (lo que ve el usuario después de iniciar sesión):
  * Inicio, Cafeterías y Restaurantes, Búsqueda, Carrito, Pedidos + la barra inferior.
  *
  * @param onProfileClick se llama al tocar "Perfil".
  * @param onRestaurantClick se llama al tocar un restaurante.
+ * @param onProductClick se llama al tocar un producto.
  * @param onOrderConfirmed se llama cuando se crea un pedido.
  */
 @Composable
@@ -43,6 +46,7 @@ fun BreakMainScreen(
     modifier: Modifier = Modifier,
     onProfileClick: () -> Unit = {},
     onRestaurantClick: (String) -> Unit = {},
+    onProductClick: (Product) -> Unit = {},
     onOrderConfirmed: (Order) -> Unit = {},
     onInsufficientFunds: (Order) -> Unit = {},
     onCardDeclined: (Order) -> Unit = {}
@@ -81,11 +85,16 @@ fun BreakMainScreen(
                                 tab = MainTab.BUSCAR
                             },
                             onSeeAllRestaurants = { showRestaurants = true },
-                            onRestaurantClick = { rest -> onRestaurantClick(rest.id) }
+                            onRestaurantClick = { rest -> onRestaurantClick(rest.id) },
+                            onProductClick = { product -> onProductClick(product) }
                         )
                     }
 
-                MainTab.BUSCAR -> SearchScreen(autoFocus = focusSearchOnOpen)
+                MainTab.BUSCAR -> SearchScreen(
+                    autoFocus = focusSearchOnOpen,
+                    onProductClick = { product -> onProductClick(product) },
+                    onRestaurantClick = { restaurantId -> onRestaurantClick(restaurantId) }
+                )
 
                 MainTab.CARRITO -> CartScreen(
                     onBack = { tab = MainTab.INICIO },

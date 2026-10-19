@@ -57,14 +57,20 @@ object Rutas {
     const val PRINCIPAL = "principal"
 
     // Módulo 4: Menú de Restaurante, Carrito y Pedidos
-    const val RESTAURANTE_DETALLE = "restaurante_detalle/{restaurantId}"
+    const val RESTAURANTE_DETALLE = "restaurante_detalle/{restaurantId}?initialSearch={initialSearch}"
     const val CARRITO = "carrito"
     const val CONFIRMACION_PEDIDO = "confirmacion_pedido/{orderId}"
     const val SEGUIMIENTO_PEDIDO = "seguimiento_pedido/{orderId}"
     const val PAGO_RECHAZADO = "pago_rechazado"
     const val FONDOS_INSUFICIENTES = "fondos_insuficientes"
 
-    fun restauranteDetalle(restaurantId: String) = "restaurante_detalle/$restaurantId"
+    fun restauranteDetalle(restaurantId: String, initialSearch: String? = null): String {
+        return if (!initialSearch.isNullOrBlank()) {
+            "restaurante_detalle/$restaurantId?initialSearch=" + java.net.URLEncoder.encode(initialSearch, "UTF-8")
+        } else {
+            "restaurante_detalle/$restaurantId"
+        }
+    }
     fun confirmacionPedido(orderId: String) = "confirmacion_pedido/$orderId"
     fun seguimientoPedido(orderId: String) = "seguimiento_pedido/$orderId"
 }
@@ -144,6 +150,9 @@ fun BreakNavHost(
                 onRestaurantClick = { restaurantId ->
                     navController.navigate(Rutas.restauranteDetalle(restaurantId))
                 },
+                onProductClick = { product ->
+                    navController.navigate(Rutas.restauranteDetalle(product.restaurantId, product.name))
+                },
                 onOrderConfirmed = { order ->
                     navController.navigate(Rutas.confirmacionPedido(order.id))
                 },
@@ -159,11 +168,20 @@ fun BreakNavHost(
         // --- FLUJO MÓDULO 4 (MENÚ RESTAURANTE, CARRITO, PEDIDOS) ---
         composable(
             route = Rutas.RESTAURANTE_DETALLE,
-            arguments = listOf(navArgument("restaurantId") { type = NavType.StringType })
+            arguments = listOf(
+                navArgument("restaurantId") { type = NavType.StringType },
+                navArgument("initialSearch") {
+                    type = NavType.StringType
+                    nullable = true
+                    defaultValue = null
+                }
+            )
         ) { backStackEntry ->
             val restaurantId = backStackEntry.arguments?.getString("restaurantId") ?: ""
+            val initialSearch = backStackEntry.arguments?.getString("initialSearch")
             RestaurantDetailScreen(
                 restaurantId = restaurantId,
+                initialSearch = initialSearch,
                 onBack = { navController.popBackStack() },
                 onNavigateToCart = { navController.navigate(Rutas.CARRITO) }
             )

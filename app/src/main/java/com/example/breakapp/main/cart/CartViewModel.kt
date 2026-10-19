@@ -11,6 +11,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
+import com.example.breakapp.main.data.StockRepository
+
 data class CartUiState(
     val selectedPaymentMethod: PaymentMethod = PaymentMethod.CARD,
     val cardNumber: String = "4532 8901 2345 6789",
@@ -36,6 +38,10 @@ class CartViewModel(
     }
 
     fun updateQuantity(item: CartItem, newQty: Int) {
+        val availableStock = StockRepository.getStock(item.product.id)
+        if (newQty > availableStock) {
+            return
+        }
         cartRepo.updateQuantity(item.product.id, newQty)
     }
 
@@ -71,7 +77,9 @@ class CartViewModel(
             return
         }
 
+        val itemsToBuy = cartState.value.items.toList()
         val order = cartRepo.createOrder(_uiState.value.selectedPaymentMethod)
+        StockRepository.decrementStock(itemsToBuy)
         _uiState.update { it.copy(isProcessing = false, orderCreated = order) }
         onSuccess(order)
     }

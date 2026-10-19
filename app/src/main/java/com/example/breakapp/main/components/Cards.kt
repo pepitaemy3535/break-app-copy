@@ -37,6 +37,10 @@ import com.example.breakapp.main.data.toCopPrice
 import com.example.breakapp.main.theme.BreakColors
 import com.example.breakapp.main.theme.BreakFonts
 
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import com.example.breakapp.main.data.StockRepository
+
 // ----------------------------------------------------------------------------------------------
 // Tarjeta de producto (carrusel del Inicio)
 // ----------------------------------------------------------------------------------------------
@@ -45,8 +49,12 @@ import com.example.breakapp.main.theme.BreakFonts
 fun ProductCard(
     product: Product,
     modifier: Modifier = Modifier,
-    onClick: () -> Unit = {} // todavía no hay pantalla de detalle
+    onClick: () -> Unit = {}
 ) {
+    val stockMap by StockRepository.stockMap.collectAsState()
+    val stock = stockMap[product.id] ?: StockRepository.getStock(product.id)
+    val isAvailable = product.available && stock > 0
+
     val shape = RoundedCornerShape(16.dp)
     Row(
         modifier = modifier
@@ -86,7 +94,7 @@ fun ProductCard(
                     overflow = TextOverflow.Ellipsis
                 )
                 Spacer(Modifier.width(8.dp))
-                AvailabilityBadge(available = product.available)
+                AvailabilityBadge(available = isAvailable, stock = stock)
             }
             Text(
                 text = product.description,
@@ -134,7 +142,7 @@ fun ProductCard(
 }
 
 @Composable
-private fun AvailabilityBadge(available: Boolean) {
+private fun AvailabilityBadge(available: Boolean, stock: Int = 30) {
     Box(
         modifier = Modifier
             .clip(RoundedCornerShape(6.dp))
@@ -142,7 +150,7 @@ private fun AvailabilityBadge(available: Boolean) {
             .padding(horizontal = 8.dp, vertical = 2.dp)
     ) {
         Text(
-            text = if (available) "Disponible" else "Agotado",
+            text = if (available) "Disp. ($stock)" else "Agotado",
             fontFamily = BreakFonts.Inter,
             fontWeight = FontWeight.Bold,
             fontSize = 10.sp,

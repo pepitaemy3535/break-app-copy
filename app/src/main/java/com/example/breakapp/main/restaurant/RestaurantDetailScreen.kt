@@ -65,10 +65,11 @@ fun RestaurantDetailScreen(
     onBack: () -> Unit,
     onNavigateToCart: () -> Unit,
     modifier: Modifier = Modifier,
+    initialSearch: String? = null,
     viewModel: RestaurantDetailViewModel = viewModel()
 ) {
-    LaunchedEffect(restaurantId) {
-        viewModel.loadRestaurant(restaurantId)
+    LaunchedEffect(restaurantId, initialSearch) {
+        viewModel.loadRestaurant(restaurantId, initialSearch)
     }
 
     val state by viewModel.uiState.collectAsState()
@@ -266,9 +267,11 @@ fun RestaurantDetailScreen(
                         ) {
                             rowProducts.forEach { product ->
                                 val qty = viewModel.getProductQuantity(product.id)
+                                val stock = viewModel.getProductStock(product.id)
                                 ProductGridCard(
                                     product = product,
                                     quantity = qty,
+                                    stock = stock,
                                     onIncrease = { viewModel.increaseQuantity(product) },
                                     onDecrease = { viewModel.decreaseQuantity(product) },
                                     modifier = Modifier.weight(1f)
@@ -330,6 +333,7 @@ fun RestaurantDetailScreen(
 private fun ProductGridCard(
     product: Product,
     quantity: Int,
+    stock: Int,
     onIncrease: () -> Unit,
     onDecrease: () -> Unit,
     modifier: Modifier = Modifier
@@ -397,9 +401,32 @@ private fun ProductGridCard(
                         color = textMuted
                     )
                 }
+                Text(
+                    text = if (stock > 0) "Disponibles: $stock" else "Agotado",
+                    fontFamily = BreakFonts.Inter,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 9.sp,
+                    color = if (stock > 0) Color(0xFF81C784) else Color(0xFFE57373)
+                )
             }
 
-            if (quantity == 0) {
+            if (stock <= 0) {
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(Color(0xFF555555))
+                        .padding(horizontal = 8.dp, vertical = 4.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "Agotado",
+                        fontFamily = BreakFonts.Inter,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 10.sp,
+                        color = Color.LightGray
+                    )
+                }
+            } else if (quantity == 0) {
                 Box(
                     modifier = Modifier
                         .size(30.dp)
@@ -448,12 +475,13 @@ private fun ProductGridCard(
                         color = Color.White
                     )
 
+                    val canAddMore = quantity < stock
                     Box(
                         modifier = Modifier
                             .size(20.dp)
                             .clip(CircleShape)
-                            .background(BreakColors.Amber)
-                            .clickable(onClick = onIncrease),
+                            .background(if (canAddMore) BreakColors.Amber else Color.Gray)
+                            .clickable(enabled = canAddMore, onClick = onIncrease),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(

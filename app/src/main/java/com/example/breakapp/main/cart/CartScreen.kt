@@ -54,6 +54,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.breakapp.R
+import com.example.breakapp.main.data.StockRepository
 import com.example.breakapp.main.data.CartItem
 import com.example.breakapp.main.data.Order
 import com.example.breakapp.main.data.PaymentMethod
@@ -72,6 +73,7 @@ fun CartScreen(
 ) {
     val cartState by viewModel.cartState.collectAsState()
     val uiState by viewModel.uiState.collectAsState()
+    val stockMap by StockRepository.stockMap.collectAsState()
 
     val deepPurpleCard = Color(0xFF381B7A)
     val textMuted = Color(0xFF9E92BA)
@@ -209,8 +211,10 @@ fun CartScreen(
                     verticalArrangement = Arrangement.spacedBy(14.dp)
                 ) {
                     cartState.items.forEachIndexed { index, item ->
+                        val availableStock = stockMap[item.product.id] ?: StockRepository.getStock(item.product.id)
                         CartItemRow(
                             item = item,
+                            availableStock = availableStock,
                             onIncrease = { viewModel.updateQuantity(item, item.quantity + 1) },
                             onDecrease = { viewModel.updateQuantity(item, item.quantity - 1) },
                             onDelete = { viewModel.removeItem(item) }
@@ -493,6 +497,7 @@ fun CartScreen(
 @Composable
 private fun CartItemRow(
     item: CartItem,
+    availableStock: Int,
     onIncrease: () -> Unit,
     onDecrease: () -> Unit,
     onDelete: () -> Unit
@@ -528,6 +533,14 @@ private fun CartItemRow(
                     color = Color.Gray
                 )
             }
+            Spacer(Modifier.height(2.dp))
+            Text(
+                text = "Disponibles: $availableStock",
+                fontFamily = BreakFonts.Inter,
+                fontSize = 10.sp,
+                fontWeight = FontWeight.Medium,
+                color = if (availableStock > 0) Color(0xFF388E3C) else Color(0xFFD32F2F)
+            )
             Spacer(Modifier.height(4.dp))
             Text(
                 text = item.totalPrice.toCopPrice(),
@@ -588,12 +601,13 @@ private fun CartItemRow(
                     color = Color.Black
                 )
 
+                val canIncrease = item.quantity < availableStock
                 Box(
                     modifier = Modifier
                         .size(22.dp)
                         .clip(CircleShape)
-                        .background(Color(0xFF2C1462))
-                        .clickable(onClick = onIncrease),
+                        .background(if (canIncrease) Color(0xFF2C1462) else Color.LightGray)
+                        .clickable(enabled = canIncrease, onClick = onIncrease),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(

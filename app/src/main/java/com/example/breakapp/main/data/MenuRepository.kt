@@ -281,11 +281,27 @@ object LocalMenuRepository : MenuRepository {
 
     override fun restaurants(): List<Restaurant> = restaurantList
 
-    override fun restaurantById(id: String): Restaurant? =
-        restaurantsById[id] ?: restaurantList.find { it.name.contains(id, ignoreCase = true) } ?: restaurantList.firstOrNull()
+    override fun restaurantById(id: String): Restaurant? {
+        val clean = id.trim().lowercase()
+        if (clean.isEmpty()) return restaurantList.firstOrNull()
+
+        return restaurantsById[clean]
+            ?: restaurantList.find { it.id.lowercase() == clean }
+            ?: when {
+                clean.contains("pizza") || clean.contains("people") -> restaurantsById[PEOPLES]
+                clean.contains("world") -> restaurantsById[WORLD]
+                clean.contains("fruit") || clean.contains("coffee") -> restaurantsById[FRUIT]
+                clean.contains("cater") || clean.contains("catherine") -> restaurantsById[CATERING]
+                else -> restaurantList.find { it.name.lowercase().contains(clean) }
+                    ?: restaurantList.find { clean.contains(it.id.lowercase()) }
+                    ?: restaurantList.firstOrNull()
+            }
+    }
 
     override fun productsForRestaurant(restaurantId: String): List<Product> {
-        val list = catalog.filter { it.restaurantId == restaurantId }
+        val resolvedRest = restaurantById(restaurantId)
+        val targetId = resolvedRest?.id ?: restaurantId
+        val list = catalog.filter { it.restaurantId == targetId }
         return if (list.isNotEmpty()) list else catalog.filter { it.restaurantId == CATERING }
     }
 

@@ -68,6 +68,8 @@ import com.example.breakapp.main.data.toCopPrice
 import com.example.breakapp.main.theme.BreakColors
 import com.example.breakapp.main.theme.BreakFonts
 
+import com.example.breakapp.main.data.Product
+
 /**
  * Búsqueda (Figma: "Busqueda", "Búsqueda menu" y "Error búsqueda").
  *
@@ -81,6 +83,8 @@ import com.example.breakapp.main.theme.BreakFonts
 fun SearchScreen(
     autoFocus: Boolean,
     modifier: Modifier = Modifier,
+    onProductClick: (Product) -> Unit = {},
+    onRestaurantClick: (String) -> Unit = {},
     repository: MenuRepository = menuRepository
 ) {
     var query by rememberSaveable { mutableStateOf("") }
@@ -110,16 +114,28 @@ fun SearchScreen(
             focusManager.clearFocus()
         } else {
             RecentSearches.add(term)
+            val exactProd = results.products.firstOrNull { it.product.name.equals(term, ignoreCase = true) }
+            val exactRest = results.restaurants.firstOrNull { it.name.equals(term, ignoreCase = true) }
+            if (exactProd != null) {
+                focusManager.clearFocus()
+                keyboard?.hide()
+                onProductClick(exactProd.product)
+                return
+            } else if (exactRest != null) {
+                focusManager.clearFocus()
+                keyboard?.hide()
+                onRestaurantClick(exactRest.id)
+                return
+            }
         }
         keyboard?.hide()
     }
 
-    /** Búsqueda al tocar una coincidencia o un reciente. */
+    /** Búsqueda al tocar un reciente. */
     fun pick(term: String) {
         query = term
         notFound = repository.search(term).isEmpty
         if (!notFound) RecentSearches.add(term)
-        focusManager.clearFocus()
         keyboard?.hide()
     }
 
@@ -149,7 +165,17 @@ fun SearchScreen(
                 notFound = false
                 focusRequester.requestFocus()
             },
-            onPick = { term -> pick(term) }
+            onPick = { term -> pick(term) },
+            onProductSelect = { product ->
+                focusManager.clearFocus()
+                keyboard?.hide()
+                onProductClick(product)
+            },
+            onRestaurantSelect = { restaurant ->
+                focusManager.clearFocus()
+                keyboard?.hide()
+                onRestaurantClick(restaurant.id)
+            }
         )
 
         when {
@@ -175,7 +201,9 @@ private fun SearchCard(
     onFocusChange: (Boolean) -> Unit,
     onSubmit: () -> Unit,
     onClear: () -> Unit,
-    onPick: (String) -> Unit
+    onPick: (String) -> Unit,
+    onProductSelect: (Product) -> Unit,
+    onRestaurantSelect: (Restaurant) -> Unit
 ) {
     val shape = RoundedCornerShape(if (expanded || notFound) 34.dp else 20.dp)
     val rowHeight = when {
@@ -289,7 +317,10 @@ private fun SearchCard(
                             iconRes = R.drawable.main_img_search_bowl,
                             title = match.product.name,
                             subtitle = "${match.restaurant.name} - ${match.product.price.toCopPrice()}",
-                            onClick = { onPick(match.product.name) }
+                            onClick = {
+                                onPick(match.product.name)
+                                onProductSelect(match.product)
+                            }
                         )
                     }
                     results.restaurants.forEach { restaurant: Restaurant ->
@@ -297,7 +328,10 @@ private fun SearchCard(
                             iconRes = restaurant.logoRes,
                             title = restaurant.name,
                             subtitle = "Restaurante - ${restaurant.timeRange}",
-                            onClick = { onPick(restaurant.name) },
+                            onClick = {
+                                onPick(restaurant.name)
+                                onRestaurantSelect(restaurant)
+                            },
                             logo = true
                         )
                     }

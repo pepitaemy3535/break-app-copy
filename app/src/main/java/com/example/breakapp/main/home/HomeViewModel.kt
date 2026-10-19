@@ -30,7 +30,10 @@ class HomeViewModel : ViewModel() {
         db.collection("Tiendas")
             .get()
             .addOnSuccessListener { result ->
-                val listaTiendas = result.toObjects(Tienda::class.java)
+                val listaTiendas = result.documents.mapNotNull { doc ->
+                    val tienda = doc.toObject(Tienda::class.java)
+                    tienda?.copy(id = if (tienda.id.isNotBlank()) tienda.id else doc.id)
+                }
                 _uiState.update {
                     it.copy(
                         tiendas = listaTiendas,
