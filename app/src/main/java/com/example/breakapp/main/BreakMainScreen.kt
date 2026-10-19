@@ -22,7 +22,7 @@ import androidx.core.view.WindowCompat
 import com.example.breakapp.main.components.BreakBottomBar
 import com.example.breakapp.main.components.MainTab
 import com.example.breakapp.main.home.HomeScreen
-import com.example.breakapp.main.home.RestaurantsScreen
+import com.example.breakapp.main.restaurant.RestaurantsScreen
 import com.example.breakapp.main.search.SearchScreen
 import com.example.breakapp.main.theme.BreakColors
 
@@ -30,15 +30,12 @@ import com.example.breakapp.main.cart.CartScreen
 import com.example.breakapp.main.data.Order
 import com.example.breakapp.main.orders.OrdersScreen
 
-import com.example.breakapp.main.data.Product
-
 /**
  * Contenedor de las pantallas principales (lo que ve el usuario después de iniciar sesión):
  * Inicio, Cafeterías y Restaurantes, Búsqueda, Carrito, Pedidos + la barra inferior.
  *
  * @param onProfileClick se llama al tocar "Perfil".
  * @param onRestaurantClick se llama al tocar un restaurante.
- * @param onProductClick se llama al tocar un producto.
  * @param onOrderConfirmed se llama cuando se crea un pedido.
  */
 @Composable
@@ -46,7 +43,6 @@ fun BreakMainScreen(
     modifier: Modifier = Modifier,
     onProfileClick: () -> Unit = {},
     onRestaurantClick: (String) -> Unit = {},
-    onProductClick: (Product) -> Unit = {},
     onOrderConfirmed: (Order) -> Unit = {},
     onInsufficientFunds: (Order) -> Unit = {},
     onCardDeclined: (Order) -> Unit = {}
@@ -85,15 +81,13 @@ fun BreakMainScreen(
                                 tab = MainTab.BUSCAR
                             },
                             onSeeAllRestaurants = { showRestaurants = true },
-                            onRestaurantClick = { rest -> onRestaurantClick(rest.id) },
-                            onProductClick = { product -> onProductClick(product) }
+                            onRestaurantClick = { rest -> onRestaurantClick(rest.id) }
                         )
                     }
 
                 MainTab.BUSCAR -> SearchScreen(
                     autoFocus = focusSearchOnOpen,
-                    onProductClick = { product -> onProductClick(product) },
-                    onRestaurantClick = { restaurantId -> onRestaurantClick(restaurantId) }
+                    onRestaurantClick = onRestaurantClick // <--- ¡Conectado aquí!
                 )
 
                 MainTab.CARRITO -> CartScreen(

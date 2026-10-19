@@ -68,23 +68,12 @@ import com.example.breakapp.main.data.toCopPrice
 import com.example.breakapp.main.theme.BreakColors
 import com.example.breakapp.main.theme.BreakFonts
 
-import com.example.breakapp.main.data.Product
-
-/**
- * Búsqueda (Figma: "Busqueda", "Búsqueda menu" y "Error búsqueda").
- *
- * Estados:
- *  1. Reposo: barra + mascota.
- *  2. Escribiendo: la barra se abre en una tarjeta con "Coincidencias" y "Recientes".
- *  3. Sin resultados (al buscar con el botón de buscar del teclado): pantalla "No encontramos ...".
- */
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun SearchScreen(
-    autoFocus: Boolean,
-    modifier: Modifier = Modifier,
-    onProductClick: (Product) -> Unit = {},
+    autoFocus: Boolean = false,
     onRestaurantClick: (String) -> Unit = {},
+    modifier: Modifier = Modifier,
     repository: MenuRepository = menuRepository
 ) {
     var query by rememberSaveable { mutableStateOf("") }
@@ -102,10 +91,8 @@ fun SearchScreen(
         if (autoFocus) focusRequester.requestFocus()
     }
 
-    // Atrás con la tarjeta abierta = cerrarla.
     BackHandler(enabled = expanded) { focusManager.clearFocus() }
 
-    /** Búsqueda con el botón "buscar" del teclado. */
     fun submit() {
         val term = query.trim()
         if (term.isEmpty()) return
@@ -114,29 +101,21 @@ fun SearchScreen(
             focusManager.clearFocus()
         } else {
             RecentSearches.add(term)
-            val exactProd = results.products.firstOrNull { it.product.name.equals(term, ignoreCase = true) }
-            val exactRest = results.restaurants.firstOrNull { it.name.equals(term, ignoreCase = true) }
-            if (exactProd != null) {
-                focusManager.clearFocus()
-                keyboard?.hide()
-                onProductClick(exactProd.product)
-                return
-            } else if (exactRest != null) {
-                focusManager.clearFocus()
-                keyboard?.hide()
-                onRestaurantClick(exactRest.id)
-                return
-            }
         }
         keyboard?.hide()
     }
 
-    /** Búsqueda al tocar un reciente. */
-    fun pick(term: String) {
+    fun pick(term: String, restaurantId: String? = null) {
         query = term
         notFound = repository.search(term).isEmpty
         if (!notFound) RecentSearches.add(term)
+        focusManager.clearFocus()
         keyboard?.hide()
+
+        // Si la coincidencia incluye el ID del restaurante, navegamos a él directamente
+        if (!restaurantId.isNullOrBlank()) {
+            onRestaurantClick(restaurantId)
+        }
     }
 
     Column(
@@ -165,16 +144,14 @@ fun SearchScreen(
                 notFound = false
                 focusRequester.requestFocus()
             },
-            onPick = { term -> pick(term) },
-            onProductSelect = { product ->
-                focusManager.clearFocus()
-                keyboard?.hide()
-                onProductClick(product)
+            onPickProduct = { match ->
+                pick(match.product.name, match.restaurant.id)
             },
-            onRestaurantSelect = { restaurant ->
-                focusManager.clearFocus()
-                keyboard?.hide()
-                onRestaurantClick(restaurant.id)
+            onPickRestaurant = { restaurant ->
+                pick(restaurant.name, restaurant.id)
+            },
+            onPickRecent = { term ->
+                pick(term)
             }
         )
 
@@ -184,10 +161,6 @@ fun SearchScreen(
         }
     }
 }
-
-// ----------------------------------------------------------------------------------------------
-// Barra / tarjeta de búsqueda
-// ----------------------------------------------------------------------------------------------
 
 @Composable
 private fun SearchCard(
@@ -201,9 +174,9 @@ private fun SearchCard(
     onFocusChange: (Boolean) -> Unit,
     onSubmit: () -> Unit,
     onClear: () -> Unit,
-    onPick: (String) -> Unit,
-    onProductSelect: (Product) -> Unit,
-    onRestaurantSelect: (Restaurant) -> Unit
+    onPickProduct: (ProductMatch) -> Unit,
+    onPickRestaurant: (Restaurant) -> Unit,
+    onPickRecent: (String) -> Unit
 ) {
     val shape = RoundedCornerShape(if (expanded || notFound) 34.dp else 20.dp)
     val rowHeight = when {
@@ -317,10 +290,7 @@ private fun SearchCard(
                             iconRes = R.drawable.main_img_search_bowl,
                             title = match.product.name,
                             subtitle = "${match.restaurant.name} - ${match.product.price.toCopPrice()}",
-                            onClick = {
-                                onPick(match.product.name)
-                                onProductSelect(match.product)
-                            }
+                            onClick = { onPickProduct(match) }
                         )
                     }
                     results.restaurants.forEach { restaurant: Restaurant ->
@@ -328,10 +298,7 @@ private fun SearchCard(
                             iconRes = restaurant.logoRes,
                             title = restaurant.name,
                             subtitle = "Restaurante - ${restaurant.timeRange}",
-                            onClick = {
-                                onPick(restaurant.name)
-                                onRestaurantSelect(restaurant)
-                            },
+                            onClick = { onPickRestaurant(restaurant) },
                             logo = true
                         )
                     }
@@ -339,7 +306,7 @@ private fun SearchCard(
                 if (recents.isNotEmpty()) {
                     SectionLabel("Recientes")
                     recents.forEach { term ->
-                        RecentRow(term = term, onClick = { onPick(term) })
+                        RecentRow(term = term, onClick = { onPickRecent(term) })
                     }
                 }
             }
@@ -432,10 +399,6 @@ private fun RecentRow(term: String, onClick: () -> Unit) {
         )
     }
 }
-
-// ----------------------------------------------------------------------------------------------
-// Contenido bajo la barra
-// ----------------------------------------------------------------------------------------------
 
 @Composable
 private fun Mascot() {
