@@ -9,6 +9,7 @@ import com.example.breakapp.main.data.FoodCategory
 import com.example.breakapp.main.data.MenuRepository
 import com.example.breakapp.main.data.Product
 import com.example.breakapp.main.data.Restaurant
+import com.example.breakapp.main.data.StockRepository
 import com.example.breakapp.main.data.menuRepository
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -56,10 +57,17 @@ class RestaurantDetailViewModel(
     val uiState: StateFlow<RestaurantDetailUiState> = _uiState.asStateFlow()
 
     val cartState: StateFlow<CartState> = cartRepo.cartState
+    val stockMap: StateFlow<Map<String, Int>> = StockRepository.stockMap
     private val firestore = FirebaseFirestore.getInstance()
 
-    fun loadRestaurant(restaurantId: String) {
-        _uiState.update { it.copy(isLoading = true) }
+    fun loadRestaurant(restaurantId: String, initialSearch: String? = null) {
+        _uiState.update {
+            it.copy(
+                isLoading = true,
+                searchQuery = initialSearch ?: "",
+                selectedCategory = "Todos"
+            )
+        }
         val rest = repository.restaurantById(restaurantId) ?: repository.restaurants().first()
 
         // Mapeo del ID recibido al documento exacto en Firestore
@@ -123,8 +131,12 @@ class RestaurantDetailViewModel(
                         "Ensalada de Frutas con Helado" -> R.drawable.main_img_food_muffin // Alternativa para variar
                         "Frappé de Café y Caramelo" -> R.drawable.main_img_food_smoothie
                         "Aromática de Frutas" -> R.drawable.main_img_food_smoothie
-                        "Pizza Hawaiana", "Pizza Pepperoni", "Pizza de Pollo con Champiñones" -> R.drawable.img_pizza
-                        "Salchipapa Tradicional", "Salchipapa Especial (Queso y Tocineta)" -> R.drawable.main_img_food_empanada
+                        "Pizza Hawaiana" -> R.drawable.img_pizza_hawaiana
+                        "Pizza Pepperoni" -> R.drawable.img_pizza_pepperoni
+                        "Pizza de Pollo con Champiñones" -> R.drawable.img_pizza_pollo_champinones
+                        "Salchipapa Tradicional" -> R.drawable.img_salchipapa_tradicional
+                        "Salchipapa Especial (Queso y Tocineta)",
+                        "Salchipapa Especial (Pollo y Queso)" -> R.drawable.img_salchipapa_especial
                         else -> R.drawable.main_img_food_chocoramo
                     }
 
@@ -134,6 +146,7 @@ class RestaurantDetailViewModel(
                         else -> FoodCategory.SNACKS
                     }
 
+                    val availableStock = StockRepository.getStock(id)
                     // Construcción exacta acorde a data class Product en Models.kt
                     val product = Product(
                         id = id,
@@ -141,7 +154,7 @@ class RestaurantDetailViewModel(
                         description = "",
                         price = precio,
                         prepTime = tiempoPrep,
-                        available = stock > 0,
+                        available = availableStock > 0,
                         imageRes = localImage,
                         category = foodCategory,
                         restaurantId = restaurantId,
@@ -164,6 +177,8 @@ class RestaurantDetailViewModel(
                 it.copy(
                     restaurant = rest,
                     allProducts = finalProducts,
+                    searchQuery = initialSearch ?: it.searchQuery,
+                    selectedCategory = "Todos",
                     isLoading = false
                 )
             }
@@ -180,7 +195,10 @@ class RestaurantDetailViewModel(
 
     fun increaseQuantity(product: Product) {
         val currentQty = cartState.value.items.find { it.product.id == product.id }?.quantity ?: 0
-        cartRepo.addItem(product, currentQty + 1)
+        val available = getProductStock(product.id)
+        if (currentQty < available) {
+            cartRepo.addItem(product, currentQty + 1)
+        }
     }
 
     fun decreaseQuantity(product: Product) {
@@ -192,5 +210,9 @@ class RestaurantDetailViewModel(
 
     fun getProductQuantity(productId: String): Int {
         return cartState.value.items.find { it.product.id == productId }?.quantity ?: 0
+    }
+
+    fun getProductStock(productId: String): Int {
+        return stockMap.value[productId] ?: StockRepository.getStock(productId)
     }
 }

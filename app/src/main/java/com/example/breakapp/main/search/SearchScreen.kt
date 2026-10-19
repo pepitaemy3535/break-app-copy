@@ -68,11 +68,14 @@ import com.example.breakapp.main.data.toCopPrice
 import com.example.breakapp.main.theme.BreakColors
 import com.example.breakapp.main.theme.BreakFonts
 
+import com.example.breakapp.main.data.Product
+
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun SearchScreen(
     autoFocus: Boolean = false,
     onRestaurantClick: (String) -> Unit = {},
+    onProductClick: (Product) -> Unit = {},
     modifier: Modifier = Modifier,
     repository: MenuRepository = menuRepository
 ) {
@@ -101,6 +104,19 @@ fun SearchScreen(
             focusManager.clearFocus()
         } else {
             RecentSearches.add(term)
+            val exactProd = results.products.firstOrNull { it.product.name.equals(term, ignoreCase = true) }
+            val exactRest = results.restaurants.firstOrNull { it.name.equals(term, ignoreCase = true) }
+            if (exactProd != null) {
+                focusManager.clearFocus()
+                keyboard?.hide()
+                onProductClick(exactProd.product)
+                return
+            } else if (exactRest != null) {
+                focusManager.clearFocus()
+                keyboard?.hide()
+                onRestaurantClick(exactRest.id)
+                return
+            }
         }
         keyboard?.hide()
     }
@@ -145,7 +161,10 @@ fun SearchScreen(
                 focusRequester.requestFocus()
             },
             onPickProduct = { match ->
-                pick(match.product.name, match.restaurant.id)
+                RecentSearches.add(match.product.name)
+                focusManager.clearFocus()
+                keyboard?.hide()
+                onProductClick(match.product)
             },
             onPickRestaurant = { restaurant ->
                 pick(restaurant.name, restaurant.id)

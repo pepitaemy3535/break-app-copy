@@ -206,31 +206,31 @@ object LocalMenuRepository : MenuRepository {
         Product(
             "pizza_hawaiana", "Pizza Hawaiana",
             "Queso mozzarella fundido, jamón seleccionado y trozos de piña.",
-            7500, "3-5 min", true, R.drawable.img_pizza, FoodCategory.SNACKS, PEOPLES,
+            7500, "3-5 min", true, R.drawable.img_pizza_hawaiana, FoodCategory.SNACKS, PEOPLES,
             calories = "280 - 320 kcal"
         ),
         Product(
             "pizza_pepperoni", "Pizza Pepperoni",
             "Crujiente masa artesanal con generoso pepperoni y queso mozzarella.",
-            7500, "3-5 min", true, R.drawable.img_pizza, FoodCategory.SNACKS, PEOPLES,
+            7500, "3-5 min", true, R.drawable.img_pizza_pepperoni, FoodCategory.SNACKS, PEOPLES,
             calories = "310 - 350 kcal"
         ),
         Product(
             "pizza_pollo_champ", "Pizza de Pollo con Champiñones",
             "Pollo desmechado sazonado, champiñones frescos y queso derretido.",
-            8000, "3-5 min", true, R.drawable.img_pizza, FoodCategory.SNACKS, PEOPLES,
+            8000, "3-5 min", true, R.drawable.img_pizza_pollo_champinones, FoodCategory.SNACKS, PEOPLES,
             calories = "300 - 340 kcal"
         ),
         Product(
             "salchipapa_tradicional", "Salchipapa Tradicional",
             "Papas a la francesa crujientes con salchicha dorada y salsas de la casa.",
-            10000, "5-8 min", true, R.drawable.main_img_search_bowl, FoodCategory.ALMUERZOS, PEOPLES,
+            10000, "5-8 min", true, R.drawable.img_salchipapa_tradicional, FoodCategory.ALMUERZOS, PEOPLES,
             calories = "520 - 600 kcal"
         ),
         Product(
             "salchipapa_especial", "Salchipapa Especial (Pollo y Queso)",
             "Papas doradas con salchicha especial, pollo desmechado y queso fundido.",
-            14000, "6-10 min", true, R.drawable.main_img_search_bowl, FoodCategory.ALMUERZOS, PEOPLES,
+            14000, "6-10 min", true, R.drawable.img_salchipapa_especial, FoodCategory.ALMUERZOS, PEOPLES,
             calories = "680 - 780 kcal"
         ),
         Product(
