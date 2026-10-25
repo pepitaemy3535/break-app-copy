@@ -19,18 +19,18 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.breakapp.main.cart.CartScreen
+import com.example.breakapp.main.cart.CartViewModel
 import com.example.breakapp.main.components.BreakBottomBar
 import com.example.breakapp.main.components.MainTab
+import com.example.breakapp.main.data.Order
+import com.example.breakapp.main.data.Product
 import com.example.breakapp.main.home.HomeScreen
+import com.example.breakapp.main.orders.OrdersScreen
 import com.example.breakapp.main.restaurant.RestaurantsScreen
 import com.example.breakapp.main.search.SearchScreen
 import com.example.breakapp.main.theme.BreakColors
-
-import com.example.breakapp.main.cart.CartScreen
-import com.example.breakapp.main.data.Order
-import com.example.breakapp.main.orders.OrdersScreen
-
-import com.example.breakapp.main.data.Product
 
 /**
  * Contenedor de las pantallas principales (lo que ve el usuario después de iniciar sesión):
@@ -44,6 +44,7 @@ import com.example.breakapp.main.data.Product
 @Composable
 fun BreakMainScreen(
     modifier: Modifier = Modifier,
+    cartViewModel: CartViewModel = viewModel(),
     onProfileClick: () -> Unit = {},
     onRestaurantClick: (String) -> Unit = {},
     onProductClick: (Product) -> Unit = {},
@@ -97,6 +98,7 @@ fun BreakMainScreen(
                 )
 
                 MainTab.CARRITO -> CartScreen(
+                    viewModel = cartViewModel,
                     onBack = { tab = MainTab.INICIO },
                     onOrderConfirmed = onOrderConfirmed,
                     onInsufficientFunds = onInsufficientFunds,

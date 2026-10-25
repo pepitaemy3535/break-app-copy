@@ -3,6 +3,7 @@ package com.example.breakapp.navigation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
@@ -13,8 +14,11 @@ import androidx.navigation.NavType
 import androidx.navigation.navArgument
 import com.example.breakapp.main.BreakMainScreen
 import com.example.breakapp.main.cart.CartScreen
+import com.example.breakapp.main.cart.CartViewModel
 import com.example.breakapp.main.cart.PaymentErrorScreen
 import com.example.breakapp.main.cart.PaymentErrorType
+import com.example.breakapp.main.data.PaymentMethod
+import com.example.breakapp.main.data.SessionManager
 import com.example.breakapp.main.orders.OrderConfirmationScreen
 import com.example.breakapp.main.orders.OrderTrackingScreen
 import com.example.breakapp.main.restaurant.RestaurantDetailScreen
@@ -84,6 +88,9 @@ fun BreakNavHost(
     val perfilViewModel: PerfilViewModel = viewModel()
     val perfilState by perfilViewModel.uiState.collectAsStateWithLifecycle()
 
+    // ViewModel compartido para todo el flujo del carrito y pagos
+    val cartViewModel: CartViewModel = viewModel()
+
     NavHost(
         navController = navController,
         startDestination = Rutas.SPLASH,
@@ -91,10 +98,19 @@ fun BreakNavHost(
     ) {
         // --- FLUJO MÓDULO 1 ---
         composable(Rutas.SPLASH) {
+            val context = LocalContext.current
             SplashScreen(
                 onTiempoCumplido = {
-                    navController.navigate(Rutas.BIENVENIDA) {
-                        popUpTo(Rutas.SPLASH) { inclusive = true }
+                    // Si el usuario guardó su sesión y sigue autenticado, ingresa directo a la pantalla principal
+                    if (SessionManager.haySesionActiva(context)) {
+                        perfilViewModel.cargarDatosUsuario()
+                        navController.navigate(Rutas.PRINCIPAL) {
+                            popUpTo(Rutas.SPLASH) { inclusive = true }
+                        }
+                    } else {
+                        navController.navigate(Rutas.BIENVENIDA) {
+                            popUpTo(Rutas.SPLASH) { inclusive = true }
+                        }
                     }
                 }
             )
@@ -132,9 +148,11 @@ fun BreakNavHost(
             )
         }
         composable(Rutas.REGISTRO) {
+            val context = LocalContext.current
             RegistroRoute(
                 onIrALogin = {
-                    // Al registrarse con éxito, recargamos los datos y pasamos directo a Inicio
+                    // Al registrarse con éxito, guardamos la sesión, recargamos los datos y pasamos directo a Inicio
+                    SessionManager.guardarSesion(context, recordar = true)
                     perfilViewModel.cargarDatosUsuario()
                     navController.navigate(Rutas.PRINCIPAL) {
                         popUpTo(Rutas.LOGIN) { inclusive = true }
@@ -146,6 +164,7 @@ fun BreakNavHost(
         // --- FLUJO MÓDULO 3 (INICIO, RESTAURANTES, BÚSQUEDA) ---
         composable(Rutas.PRINCIPAL) {
             BreakMainScreen(
+                cartViewModel = cartViewModel,
                 onProfileClick = { navController.navigate(Rutas.PERFIL) },
                 onRestaurantClick = { restaurantId ->
                     navController.navigate(Rutas.restauranteDetalle(restaurantId))
@@ -189,6 +208,7 @@ fun BreakNavHost(
 
         composable(Rutas.CARRITO) {
             CartScreen(
+                viewModel = cartViewModel,
                 onBack = { navController.popBackStack() },
                 onOrderConfirmed = { order ->
                     navController.navigate(Rutas.confirmacionPedido(order.id)) {
@@ -207,8 +227,15 @@ fun BreakNavHost(
         composable(Rutas.PAGO_RECHAZADO) {
             PaymentErrorScreen(
                 errorType = PaymentErrorType.RECHAZADO,
-                onPrimaryAction = { navController.popBackStack() },
-                onSecondaryAction = { navController.popBackStack() },
+                onPrimaryAction = {
+                    // Intentar de nuevo: vuelve al carrito para reintentar o corregir datos
+                    navController.popBackStack()
+                },
+                onSecondaryAction = {
+                    // Cambiar método de pago: selecciona Efectivo o Nequi y regresa al carrito
+                    cartViewModel.selectPaymentMethod(PaymentMethod.CASH_NEQUI)
+                    navController.popBackStack()
+                },
                 onBack = { navController.popBackStack() }
             )
         }
@@ -216,8 +243,13 @@ fun BreakNavHost(
         composable(Rutas.FONDOS_INSUFICIENTES) {
             PaymentErrorScreen(
                 errorType = PaymentErrorType.FONDOS_INSUFICIENTES,
-                onPrimaryAction = { navController.popBackStack() },
+                onPrimaryAction = {
+                    // Usar otro método de pago: selecciona Efectivo o Nequi y regresa al carrito
+                    cartViewModel.selectPaymentMethod(PaymentMethod.CASH_NEQUI)
+                    navController.popBackStack()
+                },
                 onSecondaryAction = {
+                    // Cancelar pedido: regresa al inicio
                     navController.navigate(Rutas.PRINCIPAL) {
                         popUpTo(Rutas.PRINCIPAL) { inclusive = true }
                     }
@@ -256,6 +288,7 @@ fun BreakNavHost(
 
         // --- FLUJO MÓDULO 2 (PERFIL Y CONFIGURACIÓN) ---
         composable(Rutas.PERFIL) {
+            val context = LocalContext.current
             PerfilScreen(
                 state = perfilState,
                 onEvent = perfilViewModel::onEvent,
@@ -263,6 +296,8 @@ fun BreakNavHost(
                 onNavigateToMetodosPago = { navController.navigate(Rutas.METODOS_PAGO) },
                 onNavigateToConfiguracion = { navController.navigate(Rutas.CONFIGURACION) },
                 onCerrarSesionCompleto = {
+                    SessionManager.cerrarSesion(context)
+                    perfilViewModel.limpiarSesion()
                     navController.navigate(Rutas.LOGIN) {
                         popUpTo(0) { inclusive = true }
                     }
@@ -287,6 +322,7 @@ fun BreakNavHost(
         }
 
         composable(Rutas.CONFIGURACION) {
+            val context = LocalContext.current
             ConfiguracionScreen(
                 state = perfilState,
                 onEvent = perfilViewModel::onEvent,
@@ -296,6 +332,8 @@ fun BreakNavHost(
                 onNavigateToPrivacidad = { navController.navigate(Rutas.PRIVACIDAD) },
                 onNavigateToAyuda = { navController.navigate(Rutas.AYUDA_SOPORTE) },
                 onCuentaEliminada = {
+                    SessionManager.cerrarSesion(context)
+                    perfilViewModel.limpiarSesion()
                     navController.navigate(Rutas.LOGIN) {
                         popUpTo(0) { inclusive = true }
                     }

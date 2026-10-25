@@ -1,5 +1,6 @@
 package com.example.breakapp.main.cart
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -63,8 +64,17 @@ fun PaymentErrorScreen(
     onBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val failedOrder by CartRepository.failedOrder.collectAsState()
     val activeOrder by CartRepository.activeOrder.collectAsState()
-    val order = activeOrder ?: Order()
+    val cartState by CartRepository.cartState.collectAsState()
+
+    // Usar la orden fallida, o la activa, o un borrador del estado actual del carrito
+    val order = failedOrder ?: activeOrder ?: Order(
+        restaurantName = cartState.restaurantName.ifBlank { "Catering Gourmet" },
+        restaurantLocation = cartState.restaurantLocation.ifBlank { "Módulo 2 y 7 en Planta Baja" },
+        items = cartState.items,
+        total = cartState.total
+    )
 
     val deepPurpleCard = Color(0xFF381B7A)
     val textMuted = Color(0xFFB3A5D9)
@@ -75,8 +85,7 @@ fun PaymentErrorScreen(
     val description = if (isRechazado) {
         "Tu tarjeta fue rechazada. Por favor verifica los datos e inténtalo de nuevo."
     } else {
-        "Tu tarjeta no tiene fondos suficientes para completar esta compra de " +
-                (if (order.total > 0) order.total.toCopPrice() else "$7.500") + "."
+        "Tu tarjeta no tiene fondos suficientes para completar esta compra de ${order.total.toCopPrice()}."
     }
 
     val primaryButtonText = if (isRechazado) "Intentar de Nuevo" else "Usar Otro Método de Pago"
@@ -228,9 +237,12 @@ fun PaymentErrorScreen(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                val firstProductImage = order.items.firstOrNull()?.product?.imageRes
+                    ?: R.drawable.main_img_logo
+
                 Image(
-                    painter = painterResource(R.drawable.main_img_food_capuchino),
-                    contentDescription = null,
+                    painter = painterResource(firstProductImage),
+                    contentDescription = order.items.firstOrNull()?.product?.name,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
                         .size(42.dp)
@@ -242,7 +254,7 @@ fun PaymentErrorScreen(
                 val summaryText = if (order.items.isNotEmpty()) {
                     order.items.joinToString(", ") { "${it.quantity}x ${it.product.name}" }
                 } else {
-                    "3x Tinto (Sin Azúcar)"
+                    "Sin productos"
                 }
 
                 Text(
@@ -255,7 +267,7 @@ fun PaymentErrorScreen(
                 )
 
                 Text(
-                    text = if (order.total > 0) order.total.toCopPrice() else "$7.500",
+                    text = order.total.toCopPrice(),
                     fontFamily = BreakFonts.Inter,
                     fontWeight = FontWeight.Bold,
                     fontSize = 14.sp,
@@ -278,7 +290,7 @@ fun PaymentErrorScreen(
                     color = textMuted
                 )
                 Text(
-                    text = "Visa •••• 4242",
+                    text = order.formattedPaymentMethod,
                     fontFamily = BreakFonts.Inter,
                     fontWeight = FontWeight.Bold,
                     fontSize = 12.sp,
@@ -312,7 +324,7 @@ fun PaymentErrorScreen(
         OutlinedButton(
             onClick = onSecondaryAction,
             colors = ButtonDefaults.outlinedButtonColors(containerColor = Color(0xFF23104C)),
-            border = ButtonDefaults.outlinedButtonBorder.copy(brush = androidx.compose.ui.graphics.SolidColor(Color(0xFF4C2A9E))),
+            border = BorderStroke(1.dp, Color(0xFF4C2A9E)),
             shape = RoundedCornerShape(24.dp),
             modifier = Modifier
                 .fillMaxWidth()

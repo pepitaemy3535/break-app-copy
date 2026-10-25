@@ -22,9 +22,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ReceiptLong
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.filled.ReceiptLong
 import androidx.compose.material.icons.filled.ShoppingBag
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Timer
@@ -188,7 +188,7 @@ fun OrderTrackingScreen(
                 val itemsSummary = if (order.items.isNotEmpty()) {
                     order.items.joinToString(", ") { "${it.quantity}x ${it.product.name}" }
                 } else {
-                    "3x Tinto"
+                    "Sin productos"
                 }
 
                 Text(
@@ -201,7 +201,7 @@ fun OrderTrackingScreen(
                 Spacer(Modifier.height(2.dp))
 
                 Text(
-                    text = "Total: " + (if (order.total > 0) order.total.toCopPrice() else "$7.500"),
+                    text = "Total: ${order.total.toCopPrice()}",
                     fontFamily = BreakFonts.Inter,
                     fontWeight = FontWeight.Bold,
                     fontSize = 13.sp,
@@ -217,7 +217,7 @@ fun OrderTrackingScreen(
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    imageVector = Icons.Default.ReceiptLong,
+                    imageVector = Icons.AutoMirrored.Filled.ReceiptLong,
                     contentDescription = "Ticket",
                     tint = Color.White,
                     modifier = Modifier.size(30.dp)

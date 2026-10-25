@@ -43,9 +43,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.breakapp.R
-import com.example.breakapp.main.data.CartRepository
 import com.example.breakapp.main.data.Order
-import com.example.breakapp.main.data.PaymentMethod
 import com.example.breakapp.main.data.toCopPrice
 import com.example.breakapp.main.theme.BreakColors
 import com.example.breakapp.main.theme.BreakFonts
@@ -219,8 +217,8 @@ fun OrderConfirmationScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Image(
-                        painter = painterResource(R.drawable.main_img_food_capuchino),
-                        contentDescription = "Tinto",
+                        painter = painterResource(R.drawable.main_img_logo),
+                        contentDescription = "Pedido",
                         contentScale = ContentScale.Crop,
                         modifier = Modifier
                             .size(42.dp)
@@ -229,14 +227,14 @@ fun OrderConfirmationScreen(
                     Spacer(Modifier.width(12.dp))
                     Column {
                         Text(
-                            text = "3x Tinto",
+                            text = "Pedido ${order.id}",
                             fontFamily = BreakFonts.Inter,
                             fontWeight = FontWeight.Bold,
                             fontSize = 13.sp,
                             color = Color.White
                         )
                         Text(
-                            text = "Sin azúcar",
+                            text = "Productos confirmados",
                             fontFamily = BreakFonts.Inter,
                             fontSize = 11.sp,
                             color = textMuted
@@ -263,7 +261,7 @@ fun OrderConfirmationScreen(
                     color = Color.White
                 )
                 Text(
-                    text = if (order.total > 0) order.total.toCopPrice() else "$7.500",
+                    text = order.total.toCopPrice(),
                     fontFamily = BreakFonts.Inter,
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp,
@@ -297,7 +295,7 @@ fun OrderConfirmationScreen(
 
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = order.paymentMethod.label,
+                        text = order.formattedPaymentMethod,
                         fontFamily = BreakFonts.Inter,
                         fontWeight = FontWeight.SemiBold,
                         fontSize = 12.sp,

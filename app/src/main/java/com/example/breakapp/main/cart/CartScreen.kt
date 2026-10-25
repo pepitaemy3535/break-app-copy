@@ -7,6 +7,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -20,15 +22,18 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CreditCard
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Payments
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.Store
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -39,10 +44,15 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonDefaults
+import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -50,18 +60,21 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.breakapp.R
-import com.example.breakapp.main.data.StockRepository
 import com.example.breakapp.main.data.CartItem
+import com.example.breakapp.main.data.FoodCategory
 import com.example.breakapp.main.data.Order
 import com.example.breakapp.main.data.PaymentMethod
+import com.example.breakapp.main.data.StockRepository
 import com.example.breakapp.main.data.toCopPrice
 import com.example.breakapp.main.theme.BreakColors
 import com.example.breakapp.main.theme.BreakFonts
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun CartScreen(
     onBack: () -> Unit,
@@ -74,6 +87,8 @@ fun CartScreen(
     val cartState by viewModel.cartState.collectAsState()
     val uiState by viewModel.uiState.collectAsState()
     val stockMap by StockRepository.stockMap.collectAsState()
+
+    var itemForNotesDialog by remember { mutableStateOf<CartItem?>(null) }
 
     val deepPurpleCard = Color(0xFF381B7A)
     val textMuted = Color(0xFF9E92BA)
@@ -217,7 +232,8 @@ fun CartScreen(
                             availableStock = availableStock,
                             onIncrease = { viewModel.updateQuantity(item, item.quantity + 1) },
                             onDecrease = { viewModel.updateQuantity(item, item.quantity - 1) },
-                            onDelete = { viewModel.removeItem(item) }
+                            onDelete = { viewModel.removeItem(item) },
+                            onEditNotes = { itemForNotesDialog = item }
                         )
                         if (index < cartState.items.size - 1) {
                             HorizontalDivider(color = Color(0xFFF0F0F0))
@@ -367,19 +383,29 @@ fun CartScreen(
                         OutlinedTextField(
                             value = uiState.cardNumber,
                             onValueChange = viewModel::onCardNumberChange,
-                            placeholder = { Text("xxxx xxxx xxxx xxxx", color = Color(0x66FFFFFF)) },
+                            placeholder = { Text("0000 0000 0000 0000", color = Color(0x66FFFFFF)) },
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(10.dp),
                             singleLine = true,
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                             colors = OutlinedTextFieldDefaults.colors(
                                 focusedContainerColor = Color(0xFF281157),
                                 unfocusedContainerColor = Color(0xFF281157),
                                 focusedTextColor = Color.White,
                                 unfocusedTextColor = Color.White,
-                                focusedBorderColor = BreakColors.Amber,
-                                unfocusedBorderColor = Color(0x33FFFFFF)
+                                focusedBorderColor = if (uiState.cardError != null) Color(0xFFFF5252) else BreakColors.Amber,
+                                unfocusedBorderColor = if (uiState.cardError != null) Color(0xFFFF5252) else Color(0x33FFFFFF)
                             )
                         )
+                        if (uiState.cardError != null) {
+                            Spacer(Modifier.height(4.dp))
+                            Text(
+                                text = uiState.cardError ?: "",
+                                color = Color(0xFFFF5252),
+                                fontSize = 11.sp,
+                                fontFamily = BreakFonts.Inter
+                            )
+                        }
                     }
                 }
 
@@ -460,6 +486,7 @@ fun CartScreen(
                 Spacer(Modifier.height(24.dp))
 
                 // --- BOTÓN CONFIRMAR Y PAGAR ---
+                val isPayEnabled = !uiState.isProcessing && uiState.canConfirm
                 Button(
                     onClick = {
                         viewModel.confirmOrder(
@@ -468,8 +495,11 @@ fun CartScreen(
                             onCardDeclined = onCardDeclined
                         )
                     },
-                    enabled = !uiState.isProcessing,
-                    colors = ButtonDefaults.buttonColors(containerColor = BreakColors.Amber),
+                    enabled = isPayEnabled,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = BreakColors.Amber,
+                        disabledContainerColor = BreakColors.Amber.copy(alpha = 0.4f)
+                    ),
                     shape = RoundedCornerShape(24.dp),
                     modifier = Modifier
                         .fillMaxWidth()
@@ -483,7 +513,7 @@ fun CartScreen(
                             fontFamily = BreakFonts.Inter,
                             fontWeight = FontWeight.Bold,
                             fontSize = 15.sp,
-                            color = Color(0xFF1E1B26)
+                            color = if (isPayEnabled) Color(0xFF1E1B26) else Color(0x661E1B26)
                         )
                     }
                 }
@@ -492,6 +522,88 @@ fun CartScreen(
             }
         }
     }
+
+    // Modal para editar / agregar notas (especialmente bebidas calientes)
+    itemForNotesDialog?.let { item ->
+        var noteText by remember(item) { mutableStateOf(item.notes) }
+        AlertDialog(
+            onDismissRequest = { itemForNotesDialog = null },
+            title = {
+                Text(
+                    text = "Nota para ${item.product.name}",
+                    fontFamily = BreakFonts.Inter,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp
+                )
+            },
+            text = {
+                Column {
+                    Text(
+                        text = "Personaliza tu pedido (ej. nivel de azúcar, tipo de leche):",
+                        fontFamily = BreakFonts.Inter,
+                        fontSize = 12.sp,
+                        color = Color.Gray
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    FlowRow(
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        listOf("Sin azúcar", "Poca azúcar", "Con azúcar", "Leche deslactosada").forEach { suggestion ->
+                            SuggestionChip(
+                                onClick = { noteText = suggestion },
+                                label = { Text(suggestion, fontSize = 11.sp) }
+                            )
+                        }
+                    }
+                    Spacer(Modifier.height(8.dp))
+                    OutlinedTextField(
+                        value = noteText,
+                        onValueChange = { noteText = it },
+                        placeholder = { Text("Escribe una indicación...") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        viewModel.updateNotes(item, noteText.trim())
+                        itemForNotesDialog = null
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = BreakColors.Amber)
+                ) {
+                    Text("Guardar", color = Color(0xFF1E1B26), fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.updateNotes(item, "")
+                        itemForNotesDialog = null
+                    }
+                ) {
+                    Text("Quitar nota", color = Color.Gray)
+                }
+            }
+        )
+    }
+}
+
+/**
+ * Detecta si un ítem corresponde a una bebida caliente donde tiene sentido personalizar el azúcar/preparación.
+ */
+private fun isHotBeverage(item: CartItem): Boolean {
+    val name = item.product.name.lowercase()
+    return item.product.category == FoodCategory.BEBIDAS && (
+        name.contains("café") || name.contains("cafe") ||
+        name.contains("tinto") || name.contains("capuchino") ||
+        name.contains("cappuccino") || name.contains("chocolate") ||
+        name.contains("aromática") || name.contains("aromatica") ||
+        name.contains("té") || name.contains("te") ||
+        name.contains("latte") || name.contains("espresso")
+    )
 }
 
 @Composable
@@ -500,8 +612,11 @@ private fun CartItemRow(
     availableStock: Int,
     onIncrease: () -> Unit,
     onDecrease: () -> Unit,
-    onDelete: () -> Unit
+    onDelete: () -> Unit,
+    onEditNotes: () -> Unit
 ) {
+    val isHot = isHotBeverage(item)
+
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
@@ -525,14 +640,38 @@ private fun CartItemRow(
                 fontSize = 14.sp,
                 color = Color.Black
             )
+
+            // Mostrar notas o botón para añadir notas en bebidas calientes
             if (item.notes.isNotBlank()) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.clickable(onClick = onEditNotes)
+                ) {
+                    Text(
+                        text = item.notes,
+                        fontFamily = BreakFonts.Inter,
+                        fontSize = 11.sp,
+                        color = Color(0xFF6B46C1),
+                        fontWeight = FontWeight.Medium
+                    )
+                    Spacer(Modifier.width(4.dp))
+                    Icon(
+                        imageVector = Icons.Default.Edit,
+                        contentDescription = "Editar nota",
+                        tint = Color(0xFF6B46C1),
+                        modifier = Modifier.size(12.dp)
+                    )
+                }
+            } else if (isHot) {
                 Text(
-                    text = item.notes,
+                    text = "+ Agregar nota (ej. azúcar)",
                     fontFamily = BreakFonts.Inter,
                     fontSize = 11.sp,
-                    color = Color.Gray
+                    color = Color(0xFF4C2A9E),
+                    modifier = Modifier.clickable(onClick = onEditNotes)
                 )
             }
+
             Spacer(Modifier.height(2.dp))
             Text(
                 text = "Disponibles: $availableStock",

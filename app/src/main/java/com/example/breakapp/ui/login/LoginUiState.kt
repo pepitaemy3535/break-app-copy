@@ -7,5 +7,6 @@ data class LoginUiState(
     val usuario: String = "",
     val contrasena: String = "",
     val error: ErrorLogin = ErrorLogin.Ninguno,
-    val ingresoExitoso: Boolean = false
+    val ingresoExitoso: Boolean = false,
+    val recordarSesion: Boolean = true
 )

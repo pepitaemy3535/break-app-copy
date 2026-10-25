@@ -1,6 +1,5 @@
 package com.example.breakapp.ui.login
 
-import android.widget.Toast
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -8,7 +7,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.breakapp.R
+import com.example.breakapp.main.data.SessionManager
 
 /** Conecta el ViewModel con la pantalla de login. */
 @Composable
@@ -25,6 +24,7 @@ fun LoginRoute(
 
     LaunchedEffect(state.ingresoExitoso) {
         if (state.ingresoExitoso) {
+            SessionManager.guardarSesion(contexto, state.recordarSesion, state.usuario)
             viewModel.ingresoConsumido()
             onIngresoExitoso()
         }
@@ -34,6 +34,7 @@ fun LoginRoute(
         state = state,
         onUsuarioChange = viewModel::onUsuarioChange,
         onContrasenaChange = viewModel::onContrasenaChange,
+        onRecordarSesionChange = viewModel::onRecordarSesionChange,
         onIngresar = viewModel::onIngresar,
         // El enlace dice "¿Olvidaste tu usuario?" solo cuando el error es de usuario;
         // en los demás casos dice "¿Olvidaste tu contraseña?".

@@ -34,6 +34,8 @@ data class Order(
     val items: List<CartItem> = emptyList(),
     val total: Int = 0,
     val paymentMethod: PaymentMethod = PaymentMethod.CASH_NEQUI,
+    val cardLast4: String? = null,
+    val paymentMethodDetail: String = "",
     val isPaid: Boolean = false,
     val status: OrderStatus = OrderStatus.RECIBIDO,
     val date: String = "Oct 2026",
@@ -45,4 +47,11 @@ data class Order(
         OrderNotification("3", "Tu pedido está LISTO para recoger (hace 1 min)"),
         OrderNotification("4", "Califica tu pedido", isRating = true)
     )
-)
+) {
+    val formattedPaymentMethod: String
+        get() = when {
+            paymentMethodDetail.isNotBlank() -> paymentMethodDetail
+            paymentMethod == PaymentMethod.CARD -> "Visa •••• ${cardLast4 ?: "4242"}"
+            else -> paymentMethod.label
+        }
+}

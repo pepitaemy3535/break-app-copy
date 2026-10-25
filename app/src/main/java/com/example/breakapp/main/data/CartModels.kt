@@ -6,7 +6,7 @@ package com.example.breakapp.main.data
 data class CartItem(
     val product: Product,
     val quantity: Int = 1,
-    val notes: String = "Sin azúcar"
+    val notes: String = ""
 ) {
     val totalPrice: Int get() = product.price * quantity
 }

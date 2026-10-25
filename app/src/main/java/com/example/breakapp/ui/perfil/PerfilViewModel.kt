@@ -212,9 +212,31 @@ class PerfilViewModel : ViewModel() {
         }
     }
 
+    fun limpiarSesion() {
+        auth.signOut()
+        _uiState.update {
+            PerfilUiState(
+                sesionCerrada = true,
+                usuario = UsuarioPerfil(),
+                nombreEdit = "",
+                correoEdit = "",
+                direccionEdit = ""
+            )
+        }
+    }
+
     private fun cerrarSesion() {
         auth.signOut()
-        _uiState.update { it.copy(mostrarDialogoCerrarSesion = false, sesionCerrada = true) }
+        _uiState.update {
+            PerfilUiState(
+                mostrarDialogoCerrarSesion = false,
+                sesionCerrada = true,
+                usuario = UsuarioPerfil(),
+                nombreEdit = "",
+                correoEdit = "",
+                direccionEdit = ""
+            )
+        }
     }
 
     private fun eliminarCuenta() {
@@ -226,7 +248,16 @@ class PerfilViewModel : ViewModel() {
                 user.delete()
             }
             auth.signOut()
-            _uiState.update { it.copy(mostrarDialogoEliminarCuenta = false, cuentaEliminada = true) }
+            _uiState.update {
+                PerfilUiState(
+                    mostrarDialogoEliminarCuenta = false,
+                    cuentaEliminada = true,
+                    usuario = UsuarioPerfil(),
+                    nombreEdit = "",
+                    correoEdit = "",
+                    direccionEdit = ""
+                )
+            }
         }
     }
 

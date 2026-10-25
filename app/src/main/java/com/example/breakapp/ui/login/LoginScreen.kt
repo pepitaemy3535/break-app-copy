@@ -5,6 +5,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -15,6 +16,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
@@ -23,6 +25,8 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -46,6 +50,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.breakapp.R
 import com.example.breakapp.ui.components.BotonPrimario
 import com.example.breakapp.ui.components.PieUniversidad
@@ -66,9 +71,10 @@ fun LoginScreen(
     onContrasenaChange: (String) -> Unit,
     onIngresar: () -> Unit,
     modifier: Modifier = Modifier,
-    onOlvido: () -> Unit = {},   // TODO: pantalla de recuperación (aún sin diseño enviado)
-    onGoogle: () -> Unit = {},   // TODO: Google Sign-In requiere dependencia aprobada
-    onRegistro: () -> Unit = {}  // TODO: pantalla de registro (aún sin diseño enviado)
+    onRecordarSesionChange: (Boolean) -> Unit = {},
+    onOlvido: () -> Unit = {},
+    onGoogle: () -> Unit = {},
+    onRegistro: () -> Unit = {}
 ) {
     val focusManager = LocalFocusManager.current
 
@@ -157,17 +163,47 @@ fun LoginScreen(
             )
 
             Spacer(Modifier.height(14.dp))
-            Text(
-                text = stringResource(textoEnlace),
-                style = BreakText.Enlace,
-                color = Ambar,
-                textAlign = TextAlign.End,
+
+            // Fila con opción de recordar sesión a la izquierda y olvido de contraseña a la derecha
+            Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 33.dp)
-                    .clickable(onClick = onOlvido)
-                    .padding(vertical = 4.dp)
-            )
+                    .padding(horizontal = 33.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.clickable { onRecordarSesionChange(!state.recordarSesion) }
+                ) {
+                    Checkbox(
+                        checked = state.recordarSesion,
+                        onCheckedChange = onRecordarSesionChange,
+                        colors = CheckboxDefaults.colors(
+                            checkedColor = Ambar,
+                            uncheckedColor = Color.White.copy(alpha = 0.6f),
+                            checkmarkColor = Color(0xFF1E1B26)
+                        ),
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    Text(
+                        text = "Recordarme",
+                        style = BreakText.Cuerpo.copy(fontSize = 13.sp),
+                        color = Color.White
+                    )
+                }
+
+                Text(
+                    text = stringResource(textoEnlace),
+                    style = BreakText.Enlace,
+                    color = Ambar,
+                    textAlign = TextAlign.End,
+                    modifier = Modifier
+                        .clickable(onClick = onOlvido)
+                        .padding(vertical = 4.dp)
+                )
+            }
 
             Spacer(Modifier.height(9.dp))
             Box(

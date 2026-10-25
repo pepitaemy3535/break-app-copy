@@ -24,6 +24,10 @@ class LoginViewModel : ViewModel() {
         _uiState.update { it.copy(contrasena = valor, error = ErrorLogin.Ninguno) }
     }
 
+    fun onRecordarSesionChange(valor: Boolean) {
+        _uiState.update { it.copy(recordarSesion = valor) }
+    }
+
     fun onIngresar() {
         val actual = _uiState.value
         val nombreUsuario = actual.usuario.trim()
@@ -82,6 +86,10 @@ class LoginViewModel : ViewModel() {
     }
 
     fun ingresoConsumido() {
-        _uiState.update { it.copy(ingresoExitoso = false) }
+        _uiState.update { it.copy(ingresoExitoso = false, contrasena = "") }
+    }
+
+    fun resetearParaNuevoIngreso() {
+        _uiState.update { it.copy(contrasena = "", error = ErrorLogin.Ninguno, ingresoExitoso = false) }
     }
 }

@@ -16,6 +16,9 @@ object CartRepository {
     private val _activeOrder = MutableStateFlow<Order?>(null)
     val activeOrder: StateFlow<Order?> = _activeOrder.asStateFlow()
 
+    private val _failedOrder = MutableStateFlow<Order?>(null)
+    val failedOrder: StateFlow<Order?> = _failedOrder.asStateFlow()
+
     private val _orderHistory = MutableStateFlow<List<Order>>(emptyList())
     val orderHistory: StateFlow<List<Order>> = _orderHistory.asStateFlow()
 
@@ -43,7 +46,7 @@ object CartRepository {
         }
     }
 
-    fun addItem(product: Product, quantity: Int = 1, notes: String = "Sin azúcar") {
+    fun addItem(product: Product, quantity: Int = 1, notes: String = "") {
         if (quantity <= 0) {
             removeItem(product.id)
             return
@@ -52,12 +55,25 @@ object CartRepository {
             val existing = current.items.find { it.product.id == product.id }
             val updatedItems = if (existing != null) {
                 current.items.map {
-                    if (it.product.id == product.id) it.copy(quantity = quantity, notes = notes) else it
+                    if (it.product.id == product.id) {
+                        val finalNotes = if (notes.isNotBlank()) notes else existing.notes
+                        it.copy(quantity = quantity, notes = finalNotes)
+                    } else it
                 }
             } else {
                 current.items + CartItem(product = product, quantity = quantity, notes = notes)
             }
             current.copy(items = updatedItems)
+        }
+    }
+
+    fun updateNotes(productId: String, notes: String) {
+        _cartState.update { current ->
+            current.copy(
+                items = current.items.map {
+                    if (it.product.id == productId) it.copy(notes = notes) else it
+                }
+            )
         }
     }
 
@@ -85,9 +101,51 @@ object CartRepository {
         _cartState.update { it.copy(items = emptyList()) }
     }
 
-    fun createOrder(paymentMethod: PaymentMethod): Order {
+    fun setFailedOrder(order: Order?) {
+        _failedOrder.value = order
+    }
+
+    /**
+     * Genera un borrador de pedido basado en el carrito actual para pantallas de error o previsualización.
+     * NO vacía el carrito ni lo registra en historial ni en Firestore.
+     */
+    fun createDraftOrder(paymentMethod: PaymentMethod, cardLast4: String? = null): Order {
         val current = _cartState.value
         val orderCode = "#B-${Random.nextInt(100, 999)}"
+        val paymentDetail = if (paymentMethod == PaymentMethod.CARD) {
+            "Visa •••• ${cardLast4 ?: "4242"}"
+        } else {
+            "Efectivo o Nequi"
+        }
+        return Order(
+            id = orderCode,
+            restaurantId = current.restaurantId ?: "catering_gourmet",
+            restaurantName = current.restaurantName.ifBlank { "Catering Gourmet" },
+            restaurantLocation = current.restaurantLocation.ifBlank { "Módulo 2 y 7 en Planta Baja" },
+            items = current.items,
+            total = current.total,
+            paymentMethod = paymentMethod,
+            cardLast4 = cardLast4,
+            paymentMethodDetail = paymentDetail,
+            isPaid = false,
+            status = OrderStatus.RECIBIDO,
+            estimatedTime = current.estimatedTime,
+            pickupPoint = "${current.restaurantLocation} Ext. 1933"
+        )
+    }
+
+    /**
+     * Crea un pedido confirmado tras pago exitoso.
+     * Guarda la orden, la añade al historial y a Firestore, y vacía el carrito.
+     */
+    fun createOrder(paymentMethod: PaymentMethod, cardLast4: String? = null): Order {
+        val current = _cartState.value
+        val orderCode = "#B-${Random.nextInt(100, 999)}"
+        val paymentDetail = if (paymentMethod == PaymentMethod.CARD) {
+            "Visa •••• ${cardLast4 ?: "4242"}"
+        } else {
+            "Efectivo o Nequi"
+        }
         val newOrder = Order(
             id = orderCode,
             restaurantId = current.restaurantId ?: "catering_gourmet",
@@ -96,12 +154,15 @@ object CartRepository {
             items = current.items,
             total = current.total,
             paymentMethod = paymentMethod,
+            cardLast4 = cardLast4,
+            paymentMethodDetail = paymentDetail,
             isPaid = paymentMethod == PaymentMethod.CARD,
             status = OrderStatus.RECIBIDO,
             estimatedTime = current.estimatedTime,
             pickupPoint = "${current.restaurantLocation} Ext. 1933"
         )
 
+        _failedOrder.value = null
         _activeOrder.value = newOrder
         _orderHistory.update { listOf(newOrder) + it }
         clearCart()
@@ -121,6 +182,8 @@ object CartRepository {
             "restaurantName" to order.restaurantName,
             "total" to order.total,
             "paymentMethod" to order.paymentMethod.name,
+            "cardLast4" to (order.cardLast4 ?: ""),
+            "paymentMethodDetail" to order.paymentMethodDetail,
             "isPaid" to order.isPaid,
             "status" to order.status.name,
             "date" to order.date,
