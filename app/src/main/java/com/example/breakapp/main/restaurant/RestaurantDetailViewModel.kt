@@ -196,18 +196,29 @@ class RestaurantDetailViewModel(
                         "Aromática de Frutas" -> R.drawable.main_img_food_aromatica_frutas
                         "Quatro" -> R.drawable.main_img_food_quatro
                         "Speed Max" -> R.drawable.main_img_food_speed_max
-                        // Productos nuevos de World Gourmet (imágenes temporales)
-                        "Perro Caliente Sencillo", "Hamburguesa Sencilla",
-                        "Sándwich Sencillo", "Sándwich Especial" -> R.drawable.main_img_food_pastel_pollo
-                        "Empanada de Queso", "Empanada Criolla", "Empanada Ranchera" -> R.drawable.main_img_food_empanada
-                        "Arepa de Choclo con Queso" -> R.drawable.main_img_food_almojabana
-                        "Donas", "Galletas Festival x4", "Galletas Festival x6", "Galletas Oreo" -> R.drawable.main_img_food_muffin
-                        "Papas Margarita de Tomate", "Papas Margarita de Pollo", "Papas Margarita de Limón",
-                        "Todorico Natural", "Todorico Picante",
-                        "Platanitos Dulces", "Platanitos Salados" -> R.drawable.main_img_food_pandebono
-                        "Jugo del Valle" -> R.drawable.main_img_food_jugo_hit
-                        "Gansito" -> R.drawable.main_img_food_chocoramo
-                        "Chocolatina Jumbo" -> R.drawable.main_img_food_chocolatina_jet
+                        // ---------- World Gourmet: imágenes reales ----------
+                        "Perro Caliente Sencillo" -> R.drawable.main_img_food_perro_caliente
+                        "Hamburguesa Sencilla" -> R.drawable.main_img_food_hamburguesa
+                        "Sándwich Sencillo" -> R.drawable.main_img_food_sandwich_sencillo
+                        "Sándwich Especial" -> R.drawable.main_img_food_sandwich_especial
+                        "Empanada de Queso" -> R.drawable.main_img_food_empanada_queso
+                        "Empanada Criolla" -> R.drawable.main_img_food_empanada_criolla
+                        "Empanada Ranchera" -> R.drawable.main_img_food_empanada_ranchera
+                        "Arepa de Choclo con Queso" -> R.drawable.main_img_food_arepa_choclo_queso
+                        "Papas Margarita de Tomate" -> R.drawable.main_img_food_papas_margarita_tomate
+                        "Papas Margarita de Pollo" -> R.drawable.main_img_food_papas_margarita_pollo
+                        "Papas Margarita de Limón" -> R.drawable.main_img_food_papas_margarita_limon
+                        "Todorico Natural" -> R.drawable.main_img_food_todorico_natural
+                        "Todorico Picante" -> R.drawable.main_img_food_todorico_picante
+                        "Platanitos Dulces" -> R.drawable.main_img_food_platanitos_dulces
+                        "Platanitos Salados" -> R.drawable.main_img_food_platanitos_salados
+                        "Donas" -> R.drawable.main_img_food_donas
+                        "Gansito" -> R.drawable.main_img_food_gansito
+                        "Chocolatina Jumbo" -> R.drawable.main_img_food_chocolatina_jumbo
+                        "Galletas Festival x4" -> R.drawable.main_img_food_galletas_festival_4
+                        "Galletas Festival x6" -> R.drawable.main_img_food_galletas_festival_6
+                        "Galletas Oreo" -> R.drawable.main_img_food_galletas_oreo
+                        "Jugo del Valle" -> R.drawable.main_img_food_jugo_del_valle
                         else -> R.drawable.main_img_food_chocoramo
                     }
 

@@ -338,49 +338,49 @@ object LocalMenuRepository : MenuRepository {
         Product(
             "perro_caliente_world", "Perro Caliente Sencillo",
             "Pan suave con salchicha, salsas y papa ripio.",
-            5000, "4-6 min", true, R.drawable.main_img_food_pastel_pollo, FoodCategory.ALMUERZOS, WORLD,
+            5000, "4-6 min", true, R.drawable.main_img_food_perro_caliente, FoodCategory.ALMUERZOS, WORLD,
             featured = false,
             calories = "300 - 380 kcal"
         ),
         Product(
             "hamburguesa_world", "Hamburguesa Sencilla",
             "Pan, carne de res, lechuga, tomate y salsas.",
-            7000, "6-8 min", true, R.drawable.main_img_food_pastel_pollo, FoodCategory.ALMUERZOS, WORLD,
+            7000, "6-8 min", true, R.drawable.main_img_food_hamburguesa, FoodCategory.ALMUERZOS, WORLD,
             featured = false,
             calories = "400 - 500 kcal"
         ),
         Product(
             "sandwich_sencillo_world", "Sándwich Sencillo",
             "Pan tostado con jamón y queso.",
-            6000, "4-6 min", true, R.drawable.main_img_food_pastel_pollo, FoodCategory.ALMUERZOS, WORLD,
+            6000, "4-6 min", true, R.drawable.main_img_food_sandwich_sencillo, FoodCategory.ALMUERZOS, WORLD,
             featured = false,
             calories = "280 - 340 kcal"
         ),
         Product(
             "sandwich_especial_world", "Sándwich Especial",
             "Pan tostado con jamón, queso, pollo, lechuga y tomate.",
-            8500, "5-7 min", true, R.drawable.main_img_food_pastel_pollo, FoodCategory.ALMUERZOS, WORLD,
+            8500, "5-7 min", true, R.drawable.main_img_food_sandwich_especial, FoodCategory.ALMUERZOS, WORLD,
             featured = false,
             calories = "380 - 450 kcal"
         ),
         Product(
             "empanada_queso_world", "Empanada de Queso",
             "Crujiente masa de maíz rellena de queso.",
-            3500, "2-4 min", true, R.drawable.main_img_food_empanada, FoodCategory.SNACKS, WORLD,
+            3500, "2-4 min", true, R.drawable.main_img_food_empanada_queso, FoodCategory.SNACKS, WORLD,
             featured = false,
             calories = "200 - 240 kcal"
         ),
         Product(
             "empanada_criolla_world", "Empanada Criolla",
             "Crujiente masa de maíz rellena de carne criolla.",
-            3500, "2-4 min", true, R.drawable.main_img_food_empanada, FoodCategory.SNACKS, WORLD,
+            3500, "2-4 min", true, R.drawable.main_img_food_empanada_criolla, FoodCategory.SNACKS, WORLD,
             featured = false,
             calories = "210 - 250 kcal"
         ),
         Product(
             "empanada_ranchera_world", "Empanada Ranchera",
             "Crujiente masa de maíz rellena al estilo ranchero.",
-            3500, "2-4 min", true, R.drawable.main_img_food_empanada, FoodCategory.SNACKS, WORLD,
+            3500, "2-4 min", true, R.drawable.main_img_food_empanada_ranchera, FoodCategory.SNACKS, WORLD,
             featured = false,
             calories = "210 - 250 kcal"
         ),
@@ -394,98 +394,98 @@ object LocalMenuRepository : MenuRepository {
         Product(
             "arepa_choclo_world", "Arepa de Choclo con Queso",
             "Arepa dulce de choclo con queso fundido.",
-            4500, "3-5 min", true, R.drawable.main_img_food_almojabana, FoodCategory.SNACKS, WORLD,
+            4500, "3-5 min", true, R.drawable.main_img_food_arepa_choclo_queso, FoodCategory.SNACKS, WORLD,
             featured = false,
             calories = "250 - 300 kcal"
         ),
         Product(
             "papas_tomate_world", "Papas Margarita de Tomate",
             "Papas fritas en paquete individual, sabor tomate.",
-            3000, "1 min", true, R.drawable.main_img_food_pandebono, FoodCategory.SNACKS, WORLD,
+            3000, "1 min", true, R.drawable.main_img_food_papas_margarita_tomate, FoodCategory.SNACKS, WORLD,
             featured = false,
             calories = "150 - 170 kcal"
         ),
         Product(
             "papas_pollo_world", "Papas Margarita de Pollo",
             "Papas fritas en paquete individual, sabor pollo.",
-            3000, "1 min", true, R.drawable.main_img_food_pandebono, FoodCategory.SNACKS, WORLD,
+            3000, "1 min", true, R.drawable.main_img_food_papas_margarita_pollo, FoodCategory.SNACKS, WORLD,
             featured = false,
             calories = "150 - 170 kcal"
         ),
         Product(
             "papas_limon_world", "Papas Margarita de Limón",
             "Papas fritas en paquete individual, sabor limón.",
-            3000, "1 min", true, R.drawable.main_img_food_pandebono, FoodCategory.SNACKS, WORLD,
+            3000, "1 min", true, R.drawable.main_img_food_papas_margarita_limon, FoodCategory.SNACKS, WORLD,
             featured = false,
             calories = "150 - 170 kcal"
         ),
         Product(
             "todorico_natural_world", "Todorico Natural",
             "Snack de maíz crocante, sabor natural.",
-            3000, "1 min", true, R.drawable.main_img_food_pandebono, FoodCategory.SNACKS, WORLD,
+            3000, "1 min", true, R.drawable.main_img_food_todorico_natural, FoodCategory.SNACKS, WORLD,
             featured = false,
             calories = "140 - 160 kcal"
         ),
         Product(
             "todorico_picante_world", "Todorico Picante",
             "Snack de maíz crocante, con un toque picante.",
-            3000, "1 min", true, R.drawable.main_img_food_pandebono, FoodCategory.SNACKS, WORLD,
+            3000, "1 min", true, R.drawable.main_img_food_todorico_picante, FoodCategory.SNACKS, WORLD,
             featured = false,
             calories = "140 - 160 kcal"
         ),
         Product(
             "platanitos_dulces_world", "Platanitos Dulces",
             "Chips de plátano maduro, dulces y crocantes.",
-            2500, "1 min", true, R.drawable.main_img_food_pandebono, FoodCategory.SNACKS, WORLD,
+            2500, "1 min", true, R.drawable.main_img_food_platanitos_dulces, FoodCategory.SNACKS, WORLD,
             featured = false,
             calories = "130 - 150 kcal"
         ),
         Product(
             "platanitos_salados_world", "Platanitos Salados",
             "Chips de plátano verde, salados y crocantes.",
-            2500, "1 min", true, R.drawable.main_img_food_pandebono, FoodCategory.SNACKS, WORLD,
+            2500, "1 min", true, R.drawable.main_img_food_platanitos_salados, FoodCategory.SNACKS, WORLD,
             featured = false,
             calories = "130 - 150 kcal"
         ),
         Product(
             "donas_world", "Donas",
             "Dona suave cubierta de azúcar o glaseado.",
-            3000, "1 min", true, R.drawable.main_img_food_muffin, FoodCategory.POSTRES, WORLD,
+            3000, "1 min", true, R.drawable.main_img_food_donas, FoodCategory.POSTRES, WORLD,
             featured = false,
             calories = "250 - 300 kcal"
         ),
         Product(
             "gansito_world", "Gansito",
             "Bizcocho relleno de crema y mermelada, cubierto de chocolate.",
-            3000, "1 min", true, R.drawable.main_img_food_chocoramo, FoodCategory.POSTRES, WORLD,
+            3000, "1 min", true, R.drawable.main_img_food_gansito, FoodCategory.POSTRES, WORLD,
             featured = false,
             calories = "230 - 260 kcal"
         ),
         Product(
             "chocolatina_jumbo_world", "Chocolatina Jumbo",
             "La chocolatina clásica en tamaño grande.",
-            4500, "1 min", true, R.drawable.main_img_food_chocolatina_jet, FoodCategory.POSTRES, WORLD,
+            4500, "1 min", true, R.drawable.main_img_food_chocolatina_jumbo, FoodCategory.POSTRES, WORLD,
             featured = false,
             calories = "200 - 240 kcal"
         ),
         Product(
             "galletas_festival_4_world", "Galletas Festival x4",
             "Paquete de 4 galletas Festival.",
-            2500, "1 min", true, R.drawable.main_img_food_muffin, FoodCategory.POSTRES, WORLD,
+            2500, "1 min", true, R.drawable.main_img_food_galletas_festival_4, FoodCategory.POSTRES, WORLD,
             featured = false,
             calories = "180 - 220 kcal"
         ),
         Product(
             "galletas_festival_6_world", "Galletas Festival x6",
             "Paquete de 6 galletas Festival.",
-            3500, "1 min", true, R.drawable.main_img_food_muffin, FoodCategory.POSTRES, WORLD,
+            3500, "1 min", true, R.drawable.main_img_food_galletas_festival_6, FoodCategory.POSTRES, WORLD,
             featured = false,
             calories = "270 - 330 kcal"
         ),
         Product(
             "galletas_oreo_world", "Galletas Oreo",
             "Paquete de galletas Oreo.",
-            2000, "1 min", true, R.drawable.main_img_food_muffin, FoodCategory.POSTRES, WORLD,
+            2000, "1 min", true, R.drawable.main_img_food_galletas_oreo, FoodCategory.POSTRES, WORLD,
             featured = false,
             calories = "160 - 190 kcal"
         ),
@@ -520,7 +520,7 @@ object LocalMenuRepository : MenuRepository {
         Product(
             "jugo_valle_world", "Jugo del Valle",
             "Jugo de fruta en caja individual.",
-            3500, "1 min", true, R.drawable.main_img_food_jugo_hit, FoodCategory.BEBIDAS, WORLD,
+            3500, "1 min", true, R.drawable.main_img_food_jugo_del_valle, FoodCategory.BEBIDAS, WORLD,
             featured = false,
             calories = "100 - 140 kcal"
         ),
