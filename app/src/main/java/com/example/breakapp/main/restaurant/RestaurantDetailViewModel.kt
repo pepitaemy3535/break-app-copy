@@ -1,5 +1,6 @@
 package com.example.breakapp.main.restaurant
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.breakapp.R
@@ -26,7 +27,15 @@ data class RestaurantDetailUiState(
     val selectedCategory: String = "Todos",
     val isLoading: Boolean = false
 ) {
-    val categories: List<String> = listOf("Todos", "Cafés", "Repostería", "Bebidas", "Snacks")
+    // CAMBIO 3: People's pizza tiene sus propios chips de categorías
+    val categories: List<String>
+        get() = when (restaurant?.id) {
+            "peoples_pizza" -> listOf("Todos", "Pizzas", "Salchipapas", "Bebidas", "Snacks")
+            "catering_gourmet" -> listOf("Todos", "Almuerzos", "Cafés", "Bebidas", "Snacks", "Repostería")
+            "fruit_coffee" -> listOf("Todos", "Cafés", "Jugos", "Bebidas", "Snacks", "Repostería")
+            "world_gourmet" -> listOf("Todos", "Comidas", "Empanadas y arepas", "Snacks", "Bebidas", "Repostería")
+            else -> listOf("Todos", "Cafés", "Repostería", "Bebidas", "Snacks")
+        }
 
     val filteredProducts: List<Product>
         get() {
@@ -37,7 +46,14 @@ data class RestaurantDetailUiState(
             }
             if (selectedCategory != "Todos") {
                 list = when (selectedCategory) {
-                    "Cafés" -> list.filter { it.category == FoodCategory.BEBIDAS && (it.name.contains("tinto", true) || it.name.contains("capuchino", true) || it.name.contains("café", true) || it.name.contains("frappé", true) || it.name.contains("aromática", true)) }
+                    // CAMBIO 4: filtros de los chips nuevos
+                    "Pizzas" -> list.filter { it.name.contains("pizza", true) }
+                    "Salchipapas" -> list.filter { it.name.contains("salchipapa", true) }
+                    "Almuerzos" -> list.filter { it.category == FoodCategory.ALMUERZOS }
+                    "Jugos" -> list.filter { it.category == FoodCategory.BEBIDAS && it.name.contains("jugo", true) }
+                    "Comidas" -> list.filter { it.category == FoodCategory.ALMUERZOS }
+                    "Empanadas y arepas" -> list.filter { it.name.contains("empanada", true) || it.name.contains("arepa", true) }
+                    "Cafés" -> list.filter { it.category == FoodCategory.BEBIDAS && (it.name.contains("chocolate", true) || it.name.contains("tinto", true) || it.name.contains("capuchino", true) || it.name.contains("café", true) || it.name.contains("frappé", true) || it.name.contains("aromática", true)) }
                     "Repostería" -> list.filter { it.category == FoodCategory.POSTRES }
                     "Bebidas" -> list.filter { it.category == FoodCategory.BEBIDAS }
                     "Snacks" -> list.filter { it.category == FoodCategory.SNACKS }
@@ -108,7 +124,7 @@ class RestaurantDetailViewModel(
                     val tiempoPrep = document.getString("tiempoPreparacion") ?: "3-5 min"
                     val stock = document.getLong("stock")?.toInt() ?: 0
 
-                    // Mapeo exacto de los 27 productos a sus imágenes locales
+                    // Mapeo exacto de los productos a sus imágenes locales
                     val localImage = when (nombre.trim()) {
                         "Bandeja paisa", "Bandeja Paisa Break" -> R.drawable.main_img_food_bandeja_paisa
                         "Ajiaco Santafereño" -> R.drawable.main_img_food_ajiaco
@@ -130,21 +146,81 @@ class RestaurantDetailViewModel(
                         "Paleta Artesanal de Frutas" -> R.drawable.main_img_food_paleta
                         "Ensalada de Frutas con Helado" -> R.drawable.main_img_food_muffin // Alternativa para variar
                         "Frappé de Café y Caramelo" -> R.drawable.main_img_food_smoothie
-                        "Aromática de Frutas" -> R.drawable.main_img_food_smoothie
+                        // ---------- People's pizza: imágenes reales ----------
                         "Pizza Hawaiana" -> R.drawable.img_pizza_hawaiana
                         "Pizza Pepperoni" -> R.drawable.img_pizza_pepperoni
                         "Pizza de Pollo con Champiñones" -> R.drawable.img_pizza_pollo_champinones
+                        "Pizza Margarita" -> R.drawable.img_pizza_margarita
+                        "Pizza de Jamón y Queso" -> R.drawable.img_pizza_jamon_queso
+                        "Pizza Vegetariana" -> R.drawable.img_pizza_vegetariana
+                        "Pizza Mexicana" -> R.drawable.img_pizza_mexicana
                         "Salchipapa Tradicional" -> R.drawable.img_salchipapa_tradicional
                         "Salchipapa Especial (Queso y Tocineta)",
                         "Salchipapa Especial (Pollo y Queso)" -> R.drawable.img_salchipapa_especial
+                        // Todavía sin foto propia (imágenes temporales)
+                        "Pizza Cuatro Quesos" -> R.drawable.img_pizza_hawaiana
+                        "Pizza de Carnes" -> R.drawable.img_pizza_pepperoni
+                        "Palitos de Queso" -> R.drawable.main_img_food_pandebono
+                        "Pan de Ajo con Queso" -> R.drawable.main_img_food_almojabana
+                        // ---------- Bebidas con imagen real ----------
+                        "Colombiana" -> R.drawable.main_img_food_colombiana
+                        "Agua" -> R.drawable.main_img_food_agua
+                        "Agua con Gas" -> R.drawable.main_img_food_agua_gas
+                        // Bebidas todavía con imagen temporal
+                        "Manzana Postobón", "Uva Postobón", "Pepsi Personal" -> R.drawable.main_img_food_cocacola
+                        // ---------- Catering Gourmet: imágenes reales ----------
+                        "Sprite" -> R.drawable.main_img_food_sprite
+                        "Jugos Hit de Mora" -> R.drawable.main_img_food_jugo_hit_mora
+                        "Jugos Hit de Mango" -> R.drawable.main_img_food_jugo_hit_mango
+                        "Jugos Hit de Lulo" -> R.drawable.main_img_food_jugo_hit_lulo
+                        "Chocolate de Leche" -> R.drawable.main_img_food_chocolate_leche
+                        "Chocolate en Agua" -> R.drawable.main_img_food_chocolate_agua
+                        "Aromática de Panela" -> R.drawable.main_img_food_aromatica_panela
+                        "Aromática de Hierbas" -> R.drawable.main_img_food_aromatica_hierbas
+                        "Croissant de Chocolate" -> R.drawable.main_img_food_croissant_chocolate
+                        "Arepa de Queso" -> R.drawable.main_img_food_arepa_queso
+                        "Almuerzo de Ensalada" -> R.drawable.main_img_food_almuerzo_ensalada
+                        "Arroz con Leche" -> R.drawable.main_img_food_arroz_leche
+                        // ---------- Fruit&coffee: imágenes reales ----------
+                        "Brownie con Helado" -> R.drawable.main_img_food_brownie_helado
+                        "Parfait de Yogurt" -> R.drawable.main_img_food_parfait_yogurt
+                        "Fresas con Crema" -> R.drawable.main_img_food_fresas_crema
+                        "Fresas con Chocolate" -> R.drawable.main_img_food_fresas_chocolate
+                        "Ensalada de Frutas Premium" -> R.drawable.main_img_food_ensalada_frutas_premium
+                        "Postre de Maracuyá" -> R.drawable.main_img_food_postre_maracuya
+                        "Postre Tres Leches" -> R.drawable.main_img_food_postre_tres_leches
+                        "Queso con Aguapanela" -> R.drawable.main_img_food_queso_aguapanela
+                        "Café" -> R.drawable.main_img_food_cafe
+                        "Jugo Natural en Leche" -> R.drawable.main_img_food_jugo_natural_leche
+                        "Jugo Natural en Agua" -> R.drawable.main_img_food_jugo_natural_agua
+                        "Aromática de Frutas" -> R.drawable.main_img_food_aromatica_frutas
+                        "Quatro" -> R.drawable.main_img_food_quatro
+                        "Speed Max" -> R.drawable.main_img_food_speed_max
+                        // Productos nuevos de World Gourmet (imágenes temporales)
+                        "Perro Caliente Sencillo", "Hamburguesa Sencilla",
+                        "Sándwich Sencillo", "Sándwich Especial" -> R.drawable.main_img_food_pastel_pollo
+                        "Empanada de Queso", "Empanada Criolla", "Empanada Ranchera" -> R.drawable.main_img_food_empanada
+                        "Arepa de Choclo con Queso" -> R.drawable.main_img_food_almojabana
+                        "Donas", "Galletas Festival x4", "Galletas Festival x6", "Galletas Oreo" -> R.drawable.main_img_food_muffin
+                        "Papas Margarita de Tomate", "Papas Margarita de Pollo", "Papas Margarita de Limón",
+                        "Todorico Natural", "Todorico Picante",
+                        "Platanitos Dulces", "Platanitos Salados" -> R.drawable.main_img_food_pandebono
+                        "Jugo del Valle" -> R.drawable.main_img_food_jugo_hit
+                        "Gansito" -> R.drawable.main_img_food_chocoramo
+                        "Chocolatina Jumbo" -> R.drawable.main_img_food_chocolatina_jet
                         else -> R.drawable.main_img_food_chocoramo
                     }
 
                     val foodCategory = when (categoriaStr.lowercase()) {
                         "cafés", "bebidas" -> FoodCategory.BEBIDAS
                         "repostería", "postres" -> FoodCategory.POSTRES
+                        "almuerzos", "almuerzo" -> FoodCategory.ALMUERZOS
                         else -> FoodCategory.SNACKS
                     }
+
+                    // CAMBIO 1: usa el campo "stock" de Firestore como stock inicial (solo si existe)
+                    val stockFirestore = document.getLong("stock")?.toInt()
+                    if (stockFirestore != null) StockRepository.seedStock(id, stockFirestore)
 
                     val availableStock = StockRepository.getStock(id)
                     // Construcción exacta acorde a data class Product en Models.kt
@@ -164,13 +240,18 @@ class RestaurantDetailViewModel(
                     productsList.add(product)
                 }
             } catch (e: Exception) {
-                e.printStackTrace()
+                Log.e("BreakMenu", "Error leyendo Firestore: ${e.message}", e)
             }
 
+            Log.d("BreakMenu", "Firestore devolvió ${productsList.size} productos para $firestoreDocId")
+
+            val localProducts = repository.productsForRestaurant(rest.id)
             val finalProducts = if (productsList.isNotEmpty()) {
-                productsList
+                // Firestore manda; se agregan los del código que no estén ya en Firestore (por nombre)
+                val namesInFirestore = productsList.map { it.name.trim().lowercase() }.toSet()
+                productsList + localProducts.filter { it.name.trim().lowercase() !in namesInFirestore }
             } else {
-                repository.productsForRestaurant(rest.id)
+                localProducts
             }
 
             _uiState.update {

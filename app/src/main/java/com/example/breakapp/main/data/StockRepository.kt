@@ -58,6 +58,18 @@ object StockRepository {
         }
         return DEFAULT_STOCK
     }
+    /**
+     * Fija el stock inicial desde Firestore, solo si el producto
+     * todavía no tiene un valor guardado en el celular.
+     */
+    fun seedStock(productId: String, initial: Int) {
+        val sp = prefs ?: return
+        val key = PREF_PREFIX + productId
+        if (!sp.contains(key)) {
+            sp.edit().putInt(key, initial).apply()
+            _stockMap.update { it + (productId to initial) }
+        }
+    }
 
     /**
      * Valida si se puede agregar la cantidad deseada según el stock disponible.
