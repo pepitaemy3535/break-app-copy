@@ -27,7 +27,7 @@ data class RestaurantDetailUiState(
     val selectedCategory: String = "Todos",
     val isLoading: Boolean = false
 ) {
-    // CAMBIO 3: People's pizza tiene sus propios chips de categorías
+    // CAMBIO 3: Chips de categorías por tienda
     val categories: List<String>
         get() = when (restaurant?.id) {
             "peoples_pizza" -> listOf("Todos", "Pizzas", "Salchipapas", "Bebidas", "Snacks")
@@ -124,7 +124,7 @@ class RestaurantDetailViewModel(
                     val tiempoPrep = document.getString("tiempoPreparacion") ?: "3-5 min"
                     val stock = document.getLong("stock")?.toInt() ?: 0
 
-                    // Mapeo exacto de los productos a sus imágenes locales
+                    // Mapeo exacto de los productos a sus imágenes locales en drawable
                     val localImage = when (nombre.trim()) {
                         "Bandeja paisa", "Bandeja Paisa Break" -> R.drawable.main_img_food_bandeja_paisa
                         "Ajiaco Santafereño" -> R.drawable.main_img_food_ajiaco
@@ -141,12 +141,14 @@ class RestaurantDetailViewModel(
                         "Capuchino" -> R.drawable.main_img_food_capuchino
                         "Smoothie de Mango y Passion" -> R.drawable.main_img_food_smoothie
                         "Muffin de arándanos" -> R.drawable.main_img_food_muffin
-                        "Copa de Helado con Frutas" -> R.drawable.main_img_food_paleta // O puedes cambiarlo si tienes otro recurso
-                        "Banana Split Especial" -> R.drawable.main_img_food_smoothie // Usamos otra alternativa visual
+                        "Copa de Helado con Frutas" -> R.drawable.main_img_food_paleta
+                        "Banana Split Especial" -> R.drawable.main_img_food_smoothie
                         "Paleta Artesanal de Frutas" -> R.drawable.main_img_food_paleta
-                        "Ensalada de Frutas con Helado" -> R.drawable.main_img_food_muffin // Alternativa para variar
-                        "Frappé de Café y Caramelo" -> R.drawable.main_img_food_smoothie
-                        // ---------- People's pizza: imágenes reales ----------
+                        "Ensalada de Frutas con Helado" -> R.drawable.main_img_food_muffin
+                        "Frappé de Café y Caramelo" -> R.drawable.main_img_food_capuchino
+                        "Aromática de Frutas" -> R.drawable.main_img_food_aromatica_frutas
+
+                        // People's Pizza
                         "Pizza Hawaiana" -> R.drawable.img_pizza_hawaiana
                         "Pizza Pepperoni" -> R.drawable.img_pizza_pepperoni
                         "Pizza de Pollo con Champiñones" -> R.drawable.img_pizza_pollo_champinones
@@ -154,21 +156,23 @@ class RestaurantDetailViewModel(
                         "Pizza de Jamón y Queso" -> R.drawable.img_pizza_jamon_queso
                         "Pizza Vegetariana" -> R.drawable.img_pizza_vegetariana
                         "Pizza Mexicana" -> R.drawable.img_pizza_mexicana
+                        "Pizza Cuatro Quesos" -> R.drawable.img_pizza_hawaiana
+                        "Pizza de Carnes" -> R.drawable.img_pizza_pepperoni
+                        "Palitos de Queso" -> R.drawable.main_img_food_palitos_queso
+                        "Pan de Ajo con Queso" -> R.drawable.main_img_food_pan_ajo
                         "Salchipapa Tradicional" -> R.drawable.img_salchipapa_tradicional
                         "Salchipapa Especial (Queso y Tocineta)",
                         "Salchipapa Especial (Pollo y Queso)" -> R.drawable.img_salchipapa_especial
-                        // Todavía sin foto propia (imágenes temporales)
-                        "Pizza Cuatro Quesos" -> R.drawable.img_pizza_hawaiana
-                        "Pizza de Carnes" -> R.drawable.img_pizza_pepperoni
-                        "Palitos de Queso" -> R.drawable.main_img_food_pandebono
-                        "Pan de Ajo con Queso" -> R.drawable.main_img_food_almojabana
-                        // ---------- Bebidas con imagen real ----------
+
+                        // Bebidas generales
                         "Colombiana" -> R.drawable.main_img_food_colombiana
                         "Agua" -> R.drawable.main_img_food_agua
                         "Agua con Gas" -> R.drawable.main_img_food_agua_gas
-                        // Bebidas todavía con imagen temporal
-                        "Manzana Postobón", "Uva Postobón", "Pepsi Personal" -> R.drawable.main_img_food_cocacola
-                        // ---------- Catering Gourmet: imágenes reales ----------
+                        "Manzana Postobón" -> R.drawable.main_img_food_manzana_postobon
+                        "Uva Postobón" -> R.drawable.main_img_food_uva_postobon
+                        "Pepsi Personal" -> R.drawable.main_img_food_pepsi
+
+                        // Catering Gourmet
                         "Sprite" -> R.drawable.main_img_food_sprite
                         "Jugos Hit de Mora" -> R.drawable.main_img_food_jugo_hit_mora
                         "Jugos Hit de Mango" -> R.drawable.main_img_food_jugo_hit_mango
@@ -181,7 +185,8 @@ class RestaurantDetailViewModel(
                         "Arepa de Queso" -> R.drawable.main_img_food_arepa_queso
                         "Almuerzo de Ensalada" -> R.drawable.main_img_food_almuerzo_ensalada
                         "Arroz con Leche" -> R.drawable.main_img_food_arroz_leche
-                        // ---------- Fruit&coffee: imágenes reales ----------
+
+                        // Fruit&coffee
                         "Brownie con Helado" -> R.drawable.main_img_food_brownie_helado
                         "Parfait de Yogurt" -> R.drawable.main_img_food_parfait_yogurt
                         "Fresas con Crema" -> R.drawable.main_img_food_fresas_crema
@@ -193,10 +198,10 @@ class RestaurantDetailViewModel(
                         "Café" -> R.drawable.main_img_food_cafe
                         "Jugo Natural en Leche" -> R.drawable.main_img_food_jugo_natural_leche
                         "Jugo Natural en Agua" -> R.drawable.main_img_food_jugo_natural_agua
-                        "Aromática de Frutas" -> R.drawable.main_img_food_aromatica_frutas
                         "Quatro" -> R.drawable.main_img_food_quatro
                         "Speed Max" -> R.drawable.main_img_food_speed_max
-                        // ---------- World Gourmet: imágenes reales ----------
+
+                        // World Gourmet
                         "Perro Caliente Sencillo" -> R.drawable.main_img_food_perro_caliente
                         "Hamburguesa Sencilla" -> R.drawable.main_img_food_hamburguesa
                         "Sándwich Sencillo" -> R.drawable.main_img_food_sandwich_sencillo
@@ -229,12 +234,11 @@ class RestaurantDetailViewModel(
                         else -> FoodCategory.SNACKS
                     }
 
-                    // CAMBIO 1: usa el campo "stock" de Firestore como stock inicial (solo si existe)
+                    // CAMBIO 1: usa el campo "stock" de Firestore como stock inicial
                     val stockFirestore = document.getLong("stock")?.toInt()
                     if (stockFirestore != null) StockRepository.seedStock(id, stockFirestore)
 
                     val availableStock = StockRepository.getStock(id)
-                    // Construcción exacta acorde a data class Product en Models.kt
                     val product = Product(
                         id = id,
                         name = nombre,
@@ -258,7 +262,6 @@ class RestaurantDetailViewModel(
 
             val localProducts = repository.productsForRestaurant(rest.id)
             val finalProducts = if (productsList.isNotEmpty()) {
-                // Firestore manda; se agregan los del código que no estén ya en Firestore (por nombre)
                 val namesInFirestore = productsList.map { it.name.trim().lowercase() }.toSet()
                 productsList + localProducts.filter { it.name.trim().lowercase() !in namesInFirestore }
             } else {
