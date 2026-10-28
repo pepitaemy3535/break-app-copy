@@ -1,5 +1,11 @@
 # 🍕 Break-app
 
+![Platform](https://img.shields.io/badge/Platform-Android-green?style=flat-square&logo=android)
+![Kotlin](https://img.shields.io/badge/Kotlin-2.2+-blue?style=flat-square&logo=kotlin)
+![Compose](https://img.shields.io/badge/UI-Jetpack%20Compose-4285F4?style=flat-square&logo=jetpackcompose)
+![Architecture](https://img.shields.io/badge/Architecture-MVVM%20%7C%20Clean-orange?style=flat-square)
+![Firebase](https://img.shields.io/badge/Backend-Firebase%20Suite-FFCA28?style=flat-square&logo=firebase)
+
 > Aplicación móvil nativa en **Android** desarrollada con **Kotlin** y **Jetpack Compose** para la comunidad universitaria de la **Universidad Jorge Tadeo Lozano (Bogotá)**. Permite descubrir restaurantes y cafeterías del campus, explorar menús, pedir comida en línea, gestionar métodos de pago y realizar el seguimiento de pedidos en tiempo real.
 
 ---
