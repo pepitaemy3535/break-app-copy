@@ -27,7 +27,6 @@ data class RestaurantDetailUiState(
     val selectedCategory: String = "Todos",
     val isLoading: Boolean = false
 ) {
-    // CAMBIO 3: Chips de categorías por tienda
     val categories: List<String>
         get() = when (restaurant?.id) {
             "peoples_pizza" -> listOf("Todos", "Pizzas", "Salchipapas", "Bebidas", "Snacks")
@@ -46,12 +45,10 @@ data class RestaurantDetailUiState(
             }
             if (selectedCategory != "Todos") {
                 list = when (selectedCategory) {
-                    // CAMBIO 4: filtros de los chips nuevos
                     "Pizzas" -> list.filter { it.name.contains("pizza", true) }
                     "Salchipapas" -> list.filter { it.name.contains("salchipapa", true) }
-                    "Almuerzos" -> list.filter { it.category == FoodCategory.ALMUERZOS }
+                    "Almuerzos", "Comidas" -> list.filter { it.category == FoodCategory.ALMUERZOS }
                     "Jugos" -> list.filter { it.category == FoodCategory.BEBIDAS && it.name.contains("jugo", true) }
-                    "Comidas" -> list.filter { it.category == FoodCategory.ALMUERZOS }
                     "Empanadas y arepas" -> list.filter { it.name.contains("empanada", true) || it.name.contains("arepa", true) }
                     "Cafés" -> list.filter { it.category == FoodCategory.BEBIDAS && (it.name.contains("chocolate", true) || it.name.contains("tinto", true) || it.name.contains("capuchino", true) || it.name.contains("café", true) || it.name.contains("frappé", true) || it.name.contains("aromática", true)) }
                     "Repostería" -> list.filter { it.category == FoodCategory.POSTRES }
@@ -86,7 +83,6 @@ class RestaurantDetailViewModel(
         }
         val rest = repository.restaurantById(restaurantId) ?: repository.restaurants().first()
 
-        // Mapeo del ID recibido al documento exacto en Firestore
         val firestoreDocId = when {
             restaurantId.contains("fruit", ignoreCase = true) || rest.name.contains("fruit", ignoreCase = true) -> "Fruit&coffee"
             restaurantId.contains("people", ignoreCase = true) || rest.name.contains("people", ignoreCase = true) -> "People’s_pizza"
@@ -115,16 +111,16 @@ class RestaurantDetailViewModel(
                     val id = document.id
                     val nombre = document.getString("nombre") ?: ""
 
-                    // Convertimos el precio a Int para coincidir con Models.kt
                     val precioLong = document.getLong("precio") ?: 0L
                     val precio = precioLong.toInt()
 
-                    val categoriaStr = document.getString("categoría") ?: "Snacks"
+                    // Lectura flexible de categoría y calorías (tolerante a tildes)
+                    val categoriaStr = document.getString("categoría") ?: document.getString("categoria") ?: "Snacks"
                     val calorias = document.getString("calorías") ?: document.getString("calorias") ?: ""
                     val tiempoPrep = document.getString("tiempoPreparacion") ?: "3-5 min"
                     val stock = document.getLong("stock")?.toInt() ?: 0
 
-                    // Mapeo exacto de los productos a sus imágenes locales en drawable
+                    // Mapeo exacto de imágenes locales en drawable
                     val localImage = when (nombre.trim()) {
                         "Bandeja paisa", "Bandeja Paisa Break" -> R.drawable.main_img_food_bandeja_paisa
                         "Ajiaco Santafereño" -> R.drawable.main_img_food_ajiaco
@@ -164,6 +160,7 @@ class RestaurantDetailViewModel(
                         "Salchipapa Especial (Queso y Tocineta)",
                         "Salchipapa Especial (Pollo y Queso)" -> R.drawable.img_salchipapa_especial
 
+
                         // Bebidas generales
                         "Colombiana" -> R.drawable.main_img_food_colombiana
                         "Agua" -> R.drawable.main_img_food_agua
@@ -185,6 +182,7 @@ class RestaurantDetailViewModel(
                         "Arepa de Queso" -> R.drawable.main_img_food_arepa_queso
                         "Almuerzo de Ensalada" -> R.drawable.main_img_food_almuerzo_ensalada
                         "Arroz con Leche" -> R.drawable.main_img_food_arroz_leche
+                        "Palitos de Queso" -> R.drawable.main_img_food_palitos_queso
 
                         // Fruit&coffee
                         "Brownie con Helado" -> R.drawable.main_img_food_brownie_helado
@@ -227,14 +225,14 @@ class RestaurantDetailViewModel(
                         else -> R.drawable.main_img_food_chocoramo
                     }
 
-                    val foodCategory = when (categoriaStr.lowercase()) {
-                        "cafés", "bebidas" -> FoodCategory.BEBIDAS
-                        "repostería", "postres" -> FoodCategory.POSTRES
-                        "almuerzos", "almuerzo" -> FoodCategory.ALMUERZOS
+                    val catLower = categoriaStr.lowercase()
+                    val foodCategory = when {
+                        catLower.contains("café") || catLower.contains("cafe") || catLower.contains("bebida") -> FoodCategory.BEBIDAS
+                        catLower.contains("reposteria") || catLower.contains("repostería") || catLower.contains("postre") -> FoodCategory.POSTRES
+                        catLower.contains("almuerzo") || catLower.contains("comida") -> FoodCategory.ALMUERZOS
                         else -> FoodCategory.SNACKS
                     }
 
-                    // CAMBIO 1: usa el campo "stock" de Firestore como stock inicial
                     val stockFirestore = document.getLong("stock")?.toInt()
                     if (stockFirestore != null) StockRepository.seedStock(id, stockFirestore)
 
@@ -257,8 +255,6 @@ class RestaurantDetailViewModel(
             } catch (e: Exception) {
                 Log.e("BreakMenu", "Error leyendo Firestore: ${e.message}", e)
             }
-
-            Log.d("BreakMenu", "Firestore devolvió ${productsList.size} productos para $firestoreDocId")
 
             val localProducts = repository.productsForRestaurant(rest.id)
             val finalProducts = if (productsList.isNotEmpty()) {

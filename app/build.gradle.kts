@@ -60,6 +60,11 @@ dependencies {
     // Coil para cargar la foto de perfil desde URL de forma dinámica
     implementation("io.coil-kt:coil-compose:2.6.0")
 
+    // CONEXIÓN CON IA: Retrofit & Gson Converter
+    // Nota: Se agregan directamente como strings para evitar errores con Version Catalogs (libs.versions.toml)
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+
     testImplementation(libs.junit)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
