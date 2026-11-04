@@ -37,6 +37,8 @@ import com.example.breakapp.ui.recuperarusuario.RecuperarUsuarioRoute
 import com.example.breakapp.ui.registro.RegistroRoute
 import com.example.breakapp.ui.splash.SplashScreen
 import com.example.breakapp.ui.welcome.WelcomeScreen
+import com.example.breakapp.ui.ai.AiRecommendationsScreen
+import com.example.breakapp.ui.ai.AiViewModel
 
 object Rutas {
     // Módulo 1: Autenticación y Recuperación
@@ -59,6 +61,7 @@ object Rutas {
 
     // Módulo 3: Pantallas principales (Inicio, Restaurantes, Búsqueda)
     const val PRINCIPAL = "principal"
+    const val RECOMENDACIONES_IA = "recomendaciones_ia"
 
     // Módulo 4: Menú de Restaurante, Carrito y Pedidos
     const val RESTAURANTE_DETALLE = "restaurante_detalle/{restaurantId}?initialSearch={initialSearch}"
@@ -180,6 +183,20 @@ fun BreakNavHost(
                 },
                 onCardDeclined = {
                     navController.navigate(Rutas.PAGO_RECHAZADO)
+                },
+                onRecommendationsClick = {
+                    navController.navigate(Rutas.RECOMENDACIONES_IA)
+                }
+            )
+        }
+
+        composable(Rutas.RECOMENDACIONES_IA) {
+            val aiViewModel: AiViewModel = viewModel()
+            AiRecommendationsScreen(
+                viewModel = aiViewModel,
+                onBack = { navController.popBackStack() },
+                onExploreRestaurants = {
+                    navController.popBackStack()
                 }
             )
         }

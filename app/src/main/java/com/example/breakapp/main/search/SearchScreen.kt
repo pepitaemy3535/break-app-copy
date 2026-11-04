@@ -6,6 +6,13 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -76,6 +83,7 @@ fun SearchScreen(
     autoFocus: Boolean = false,
     onRestaurantClick: (String) -> Unit = {},
     onProductClick: (Product) -> Unit = {},
+    onRecommendationsClick: () -> Unit = {},
     modifier: Modifier = Modifier,
     repository: MenuRepository = menuRepository
 ) {
@@ -175,8 +183,8 @@ fun SearchScreen(
         )
 
         when {
-            notFound -> NotFoundContent(query = query)
-            !expanded -> Mascot()
+            notFound -> NotFoundContent(query = query, onRecommendationsClick = onRecommendationsClick)
+            !expanded -> Mascot(onRecommendationsClick = onRecommendationsClick)
         }
     }
 }
@@ -420,32 +428,42 @@ private fun RecentRow(term: String, onClick: () -> Unit) {
 }
 
 @Composable
-private fun Mascot() {
-    Box(
+private fun Mascot(onRecommendationsClick: () -> Unit) {
+    Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 111.dp)
+            .padding(top = 28.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Image(
-            painter = painterResource(R.drawable.main_img_search_mascot),
-            contentDescription = null,
-            contentScale = ContentScale.Fit,
-            modifier = Modifier
-                .align(Alignment.CenterEnd)
-                .padding(end = 12.dp)
-                .fillMaxWidth(0.865f)
-                .aspectRatio(1000f / 750f)
-        )
+        Box(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Image(
+                painter = painterResource(R.drawable.main_img_search_mascot),
+                contentDescription = null,
+                contentScale = ContentScale.Fit,
+                modifier = Modifier
+                    .align(Alignment.CenterEnd)
+                    .padding(end = 12.dp)
+                    .fillMaxWidth(0.865f)
+                    .aspectRatio(1000f / 750f)
+            )
+        }
+        Spacer(Modifier.height(20.dp))
+        RecommendationsButton(onClick = onRecommendationsClick)
     }
 }
 
 @Composable
-private fun NotFoundContent(query: String) {
+private fun NotFoundContent(
+    query: String,
+    onRecommendationsClick: () -> Unit
+) {
     val shown = query.trim().replaceFirstChar { it.uppercase() }
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 42.dp, start = 24.dp, end = 24.dp),
+            .padding(top = 36.dp, start = 24.dp, end = 24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Image(
@@ -453,7 +471,7 @@ private fun NotFoundContent(query: String) {
             contentDescription = null,
             modifier = Modifier.size(width = 129.dp, height = 127.dp)
         )
-        Spacer(Modifier.height(24.dp))
+        Spacer(Modifier.height(20.dp))
         Text(
             text = "No encontramos “$shown”",
             fontFamily = BreakFonts.Inter,
@@ -464,13 +482,53 @@ private fun NotFoundContent(query: String) {
         )
         Spacer(Modifier.height(8.dp))
         Text(
-            text = "Prueba con otro nombre o mira lo mejor calificado",
-            modifier = Modifier.widthIn(max = 262.dp),
+            text = "Prueba con otro nombre o mira las recomendaciones de nuestra IA",
+            modifier = Modifier.widthIn(max = 280.dp),
             fontFamily = BreakFonts.Inter,
             fontWeight = FontWeight.Medium,
             fontSize = 14.sp,
             color = Color.White,
             textAlign = TextAlign.Center
         )
+        Spacer(Modifier.height(24.dp))
+        RecommendationsButton(onClick = onRecommendationsClick)
+    }
+}
+
+@Composable
+fun RecommendationsButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Button(
+        onClick = onClick,
+        colors = ButtonDefaults.buttonColors(
+            containerColor = BreakColors.Amber,
+            contentColor = Color(0xFF26184C)
+        ),
+        shape = RoundedCornerShape(28.dp),
+        contentPadding = PaddingValues(horizontal = 24.dp, vertical = 13.dp),
+        elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp),
+        modifier = modifier
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ) {
+            Icon(
+                imageVector = Icons.Default.AutoAwesome,
+                contentDescription = null,
+                tint = Color(0xFF26184C),
+                modifier = Modifier.size(18.dp)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = "Ver tus recomendaciones",
+                fontFamily = BreakFonts.Inter,
+                fontWeight = FontWeight.Bold,
+                fontSize = 15.sp,
+                color = Color(0xFF26184C)
+            )
+        }
     }
 }

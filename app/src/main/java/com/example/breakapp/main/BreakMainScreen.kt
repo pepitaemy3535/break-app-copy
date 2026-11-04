@@ -50,7 +50,8 @@ fun BreakMainScreen(
     onProductClick: (Product) -> Unit = {},
     onOrderConfirmed: (Order) -> Unit = {},
     onInsufficientFunds: (Order) -> Unit = {},
-    onCardDeclined: (Order) -> Unit = {}
+    onCardDeclined: (Order) -> Unit = {},
+    onRecommendationsClick: () -> Unit = {}
 ) {
     var tab by rememberSaveable { mutableStateOf(MainTab.INICIO) }
     var showRestaurants by rememberSaveable { mutableStateOf(false) }
@@ -94,7 +95,8 @@ fun BreakMainScreen(
                 MainTab.BUSCAR -> SearchScreen(
                     autoFocus = focusSearchOnOpen,
                     onRestaurantClick = onRestaurantClick,
-                    onProductClick = onProductClick
+                    onProductClick = onProductClick,
+                    onRecommendationsClick = onRecommendationsClick
                 )
 
                 MainTab.CARRITO -> CartScreen(
