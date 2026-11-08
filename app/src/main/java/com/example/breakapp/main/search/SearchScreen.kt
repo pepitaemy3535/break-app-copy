@@ -10,6 +10,9 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.IconButton
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -182,6 +185,39 @@ fun SearchScreen(
             }
         )
 
+        if (!expanded && !notFound) {
+            Spacer(Modifier.height(14.dp))
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState())
+                    .padding(horizontal = 24.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                val quickChips = listOf("Almuerzos", "Pizzas", "Bebidas", "Postres", "Snacks", "Café")
+                quickChips.forEach { chip ->
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(16.dp))
+                            .background(Color(0xFF381B7A))
+                            .border(1.dp, Color(0x44FFFFFF), RoundedCornerShape(16.dp))
+                            .clickable {
+                                pick(chip)
+                            }
+                            .padding(horizontal = 14.dp, vertical = 8.dp)
+                    ) {
+                        Text(
+                            text = chip,
+                            fontFamily = BreakFonts.Inter,
+                            fontWeight = FontWeight.Medium,
+                            fontSize = 12.sp,
+                            color = Color.White
+                        )
+                    }
+                }
+            }
+        }
+
         when {
             notFound -> NotFoundContent(query = query, onRecommendationsClick = onRecommendationsClick)
             !expanded -> Mascot(onRecommendationsClick = onRecommendationsClick)
@@ -331,9 +367,35 @@ private fun SearchCard(
                     }
                 }
                 if (recents.isNotEmpty()) {
-                    SectionLabel("Recientes")
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = 18.dp, end = 18.dp, top = 12.dp, bottom = 4.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Recientes",
+                            fontFamily = BreakFonts.Inter,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 14.sp,
+                            color = BreakColors.GrayLight
+                        )
+                        Text(
+                            text = "Borrar todo",
+                            fontFamily = BreakFonts.Inter,
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 12.sp,
+                            color = BreakColors.Purple,
+                            modifier = Modifier.clickable { RecentSearches.clear() }
+                        )
+                    }
                     recents.forEach { term ->
-                        RecentRow(term = term, onClick = { onPickRecent(term) })
+                        RecentRow(
+                            term = term,
+                            onClick = { onPickRecent(term) },
+                            onRemove = { RecentSearches.remove(term) }
+                        )
                     }
                 }
             }
@@ -401,7 +463,7 @@ private fun MatchRow(
 }
 
 @Composable
-private fun RecentRow(term: String, onClick: () -> Unit) {
+private fun RecentRow(term: String, onClick: () -> Unit, onRemove: () -> Unit = {}) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -422,8 +484,20 @@ private fun RecentRow(term: String, onClick: () -> Unit) {
             fontSize = 14.sp,
             color = BreakColors.Gray,
             maxLines = 1,
-            overflow = TextOverflow.Ellipsis
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.weight(1f)
         )
+        IconButton(
+            onClick = onRemove,
+            modifier = Modifier.size(28.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Default.Close,
+                contentDescription = "Eliminar de recientes",
+                tint = BreakColors.GrayLight,
+                modifier = Modifier.size(16.dp)
+            )
+        }
     }
 }
 

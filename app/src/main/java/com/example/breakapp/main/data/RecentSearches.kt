@@ -19,4 +19,12 @@ object RecentSearches {
         items.add(0, clean)
         while (items.size > MAX_ITEMS) items.removeAt(items.lastIndex)
     }
+
+    fun remove(term: String) {
+        items.removeAll { it.equals(term.trim(), ignoreCase = true) }
+    }
+
+    fun clear() {
+        items.clear()
+    }
 }
