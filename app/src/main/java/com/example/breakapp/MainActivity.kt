@@ -7,6 +7,7 @@ import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import com.example.breakapp.main.data.StockRepository
+import com.example.breakapp.main.notifications.OrderNotificationHelper
 import com.example.breakapp.navigation.BreakNavHost
 import com.example.breakapp.ui.theme.BreakAppTheme
 
@@ -14,6 +15,8 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         StockRepository.init(this)
+        OrderNotificationHelper.createNotificationChannel(this)
+
         // Fondo morado oscuro: íconos de las barras del sistema en claro.
         enableEdgeToEdge(
             statusBarStyle = SystemBarStyle.dark(Color.TRANSPARENT),

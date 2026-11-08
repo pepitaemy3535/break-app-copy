@@ -1,5 +1,8 @@
 package com.example.breakapp.main.orders
 
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -24,7 +27,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ReceiptLong
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.FastForward
 import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.ShoppingBag
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Timer
@@ -33,17 +39,21 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -60,12 +70,24 @@ fun OrderTrackingScreen(
     modifier: Modifier = Modifier,
     viewModel: OrdersViewModel = viewModel()
 ) {
+    val context = LocalContext.current
     val activeOrder by viewModel.activeOrder.collectAsState()
     val uiState by viewModel.uiState.collectAsState()
 
     val order = activeOrder ?: Order()
     val deepPurpleCard = Color(0xFF381B7A)
     val textMuted = Color(0xFFB3A5D9)
+
+    // Solicitar permiso de notificaciones en Android 13+
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { /* Permiso concedido o denegado */ }
+
+    LaunchedEffect(Unit) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            permissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+        }
+    }
 
     Column(
         modifier = modifier
@@ -90,14 +112,21 @@ fun OrderTrackingScreen(
 
             Spacer(Modifier.width(8.dp))
 
-            Text(
-                text = "Seguimiento de Pedido",
-                fontFamily = BreakFonts.Inter,
-                fontWeight = FontWeight.Bold,
-                fontSize = 18.sp,
-                color = Color.White,
-                modifier = Modifier.weight(1f)
-            )
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = "Seguimiento de Pedido",
+                    fontFamily = BreakFonts.Inter,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp,
+                    color = Color.White
+                )
+                Text(
+                    text = "${order.date} • ${order.time}",
+                    fontFamily = BreakFonts.Inter,
+                    fontSize = 12.sp,
+                    color = textMuted
+                )
+            }
 
             Image(
                 painter = painterResource(R.drawable.main_img_logo),
@@ -106,13 +135,15 @@ fun OrderTrackingScreen(
             )
         }
 
-        Spacer(Modifier.height(24.dp))
+        Spacer(Modifier.height(20.dp))
 
-        // --- STEPPER / TIMELINE ---
+        // --- STEPPER / TIMELINE (4 PASOS) ---
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 8.dp)
+                .clip(RoundedCornerShape(16.dp))
+                .background(deepPurpleCard)
+                .padding(16.dp)
         ) {
             // Paso 1: Pedido Recibido
             TimelineStepItem(
@@ -125,12 +156,16 @@ fun OrderTrackingScreen(
                     )
                 },
                 title = "Pedido Recibido",
-                subtitle = null,
+                subtitle = "¡Tu pedido fue recibido y confirmado en caja!",
                 isCompleted = true,
+                isActive = order.status == OrderStatus.RECIBIDO,
                 showBottomLine = true
             )
 
             // Paso 2: En Preparación
+            val isPrepDone = order.status == OrderStatus.EN_PREPARACION ||
+                    order.status == OrderStatus.LISTO ||
+                    order.status == OrderStatus.ENTREGADO
             TimelineStepItem(
                 icon = {
                     Icon(
@@ -141,12 +176,18 @@ fun OrderTrackingScreen(
                     )
                 },
                 title = "En Preparación",
-                subtitle = "Tu pedido se está preparando... Tiempo estimado: 8 min",
-                isCompleted = order.status == OrderStatus.EN_PREPARACION || order.status == OrderStatus.LISTO,
+                subtitle = when {
+                    order.status == OrderStatus.EN_PREPARACION -> "Preparando en cocina... Tiempo restante: ${uiState.formattedRemainingTime}"
+                    order.status == OrderStatus.RECIBIDO -> "Tiempo estimado de preparación: ${order.estimatedTime}"
+                    else -> "Preparación completada (${order.estimatedTime})"
+                },
+                isCompleted = isPrepDone,
+                isActive = order.status == OrderStatus.EN_PREPARACION,
                 showBottomLine = true
             )
 
             // Paso 3: Listo para Recoger
+            val isReadyDone = order.status == OrderStatus.LISTO || order.status == OrderStatus.ENTREGADO
             TimelineStepItem(
                 icon = {
                     Icon(
@@ -157,13 +198,224 @@ fun OrderTrackingScreen(
                     )
                 },
                 title = "Listo para Recoger",
-                subtitle = "Punto de recogida: Módulo 2 y 7 Planta Baja",
-                isCompleted = order.status == OrderStatus.LISTO,
+                subtitle = "Punto de entrega: ${order.pickupPoint}",
+                isCompleted = isReadyDone,
+                isActive = order.status == OrderStatus.LISTO,
+                showBottomLine = true
+            )
+
+            // Paso 4: Pedido Entregado
+            TimelineStepItem(
+                icon = {
+                    Icon(
+                        imageVector = Icons.Default.CheckCircle,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(16.dp)
+                    )
+                },
+                title = "Pedido Entregado",
+                subtitle = if (order.status == OrderStatus.ENTREGADO) "¡Entrega confirmada por ti! Buen provecho." else "Pendiente de confirmación de entrega",
+                isCompleted = order.status == OrderStatus.ENTREGADO,
+                isActive = order.status == OrderStatus.ENTREGADO,
                 showBottomLine = false
             )
         }
 
-        Spacer(Modifier.height(24.dp))
+        Spacer(Modifier.height(16.dp))
+
+        // --- TARJETAS DE ACCIÓN SEGÚN ESTADO ---
+
+        // ESTADO 1: EN PREPARACIÓN -> BOTÓN PARA ACELERAR / PROBAR NOTIFICACIONES
+        if (order.status == OrderStatus.RECIBIDO || order.status == OrderStatus.EN_PREPARACION) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(Color(0xFF2D1664))
+                    .border(1.dp, BreakColors.Amber.copy(alpha = 0.4f), RoundedCornerShape(16.dp))
+                    .padding(14.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Default.Timer,
+                        contentDescription = null,
+                        tint = BreakColors.Amber,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    Text(
+                        text = "Tiempo de preparación: ${order.estimatedTime}",
+                        fontFamily = BreakFonts.Inter,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 14.sp,
+                        color = Color.White
+                    )
+                }
+
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    text = "Al cumplirse el tiempo, recibirás una notificación de aviso para recogerlo.",
+                    fontFamily = BreakFonts.Inter,
+                    fontSize = 12.sp,
+                    color = textMuted,
+                    textAlign = TextAlign.Center
+                )
+
+                Spacer(Modifier.height(12.dp))
+
+                Button(
+                    onClick = { viewModel.simulateTimeComplete(context) },
+                    colors = ButtonDefaults.buttonColors(containerColor = BreakColors.Amber),
+                    shape = RoundedCornerShape(20.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.FastForward,
+                        contentDescription = null,
+                        tint = Color(0xFF1E1B26),
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    Text(
+                        text = "Simular tiempo cumplido (Avisar ya)",
+                        fontFamily = BreakFonts.Inter,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 13.sp,
+                        color = Color(0xFF1E1B26)
+                    )
+                }
+            }
+            Spacer(Modifier.height(16.dp))
+        }
+
+        // ESTADO 2: LISTO PARA RECOGER -> ALERTA DESTACADA Y BOTÓN "CONFIRMAR ENTREGA"
+        if (order.status == OrderStatus.LISTO) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(18.dp))
+                    .background(Color(0xFF4C2210))
+                    .border(2.dp, BreakColors.Amber, RoundedCornerShape(18.dp))
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Default.Place,
+                        contentDescription = null,
+                        tint = BreakColors.Amber,
+                        modifier = Modifier.size(24.dp)
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    Text(
+                        text = "¡Tu pedido ya está listo!",
+                        fontFamily = BreakFonts.Inter,
+                        fontWeight = FontWeight.ExtraBold,
+                        fontSize = 16.sp,
+                        color = BreakColors.Amber
+                    )
+                }
+
+                Spacer(Modifier.height(6.dp))
+                Text(
+                    text = "Pasa a recogerlo en: ${order.pickupPoint}",
+                    fontFamily = BreakFonts.Inter,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 13.sp,
+                    color = Color.White,
+                    textAlign = TextAlign.Center
+                )
+
+                Spacer(Modifier.height(14.dp))
+
+                // BOTÓN PRINCIPAL REQUERIDO: CONFIRMAR QUE YA TIENE EL PEDIDO
+                Button(
+                    onClick = { viewModel.openConfirmDeliveryDialog(order) },
+                    colors = ButtonDefaults.buttonColors(containerColor = BreakColors.Amber),
+                    shape = RoundedCornerShape(24.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(48.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.CheckCircle,
+                        contentDescription = null,
+                        tint = Color(0xFF1E1B26)
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    Text(
+                        text = "Confirmar que ya tengo el pedido",
+                        fontFamily = BreakFonts.Inter,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 14.sp,
+                        color = Color(0xFF1E1B26)
+                    )
+                }
+            }
+            Spacer(Modifier.height(16.dp))
+        }
+
+        // ESTADO 3: ENTREGADO -> CONFIRMACIÓN Y BOTÓN CALIFICAR
+        if (order.status == OrderStatus.ENTREGADO) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(18.dp))
+                    .background(Color(0xFF143B22))
+                    .border(1.5.dp, Color(0xFF4CAF50), RoundedCornerShape(18.dp))
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Default.CheckCircle,
+                        contentDescription = null,
+                        tint = Color(0xFF4CAF50),
+                        modifier = Modifier.size(24.dp)
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    Text(
+                        text = "¡Pedido Entregado con Éxito!",
+                        fontFamily = BreakFonts.Inter,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp,
+                        color = Color.White
+                    )
+                }
+
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    text = "Confirmaste la recepción de tu comida. ¡Esperamos que la disfrutes!",
+                    fontFamily = BreakFonts.Inter,
+                    fontSize = 12.sp,
+                    color = Color(0xFFC8E6C9),
+                    textAlign = TextAlign.Center
+                )
+
+                if (!uiState.ratingSent) {
+                    Spacer(Modifier.height(12.dp))
+                    OutlinedButton(
+                        onClick = viewModel::openRatingDialog,
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = BreakColors.Amber),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, BreakColors.Amber),
+                        shape = RoundedCornerShape(20.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Icon(imageVector = Icons.Default.Star, contentDescription = null, tint = BreakColors.Amber)
+                        Spacer(Modifier.width(8.dp))
+                        Text(
+                            text = "Calificar experiencia ⭐",
+                            fontFamily = BreakFonts.Inter,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 13.sp
+                        )
+                    }
+                }
+            }
+            Spacer(Modifier.height(16.dp))
+        }
 
         // --- TARJETA BLANCA RESUMEN DEL PEDIDO ---
         Row(
@@ -175,9 +427,9 @@ fun OrderTrackingScreen(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Column {
+            Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = "Orden ${order.id}",
+                    text = "Orden ${order.id} • ${order.restaurantName}",
                     fontFamily = BreakFonts.Inter,
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp,
@@ -188,7 +440,7 @@ fun OrderTrackingScreen(
                 val itemsSummary = if (order.items.isNotEmpty()) {
                     order.items.joinToString(", ") { "${it.quantity}x ${it.product.name}" }
                 } else {
-                    "Sin productos"
+                    "Productos variados"
                 }
 
                 Text(
@@ -201,13 +453,15 @@ fun OrderTrackingScreen(
                 Spacer(Modifier.height(2.dp))
 
                 Text(
-                    text = "Total: ${order.total.toCopPrice()}",
+                    text = "Total: ${order.total.toCopPrice()} (${order.formattedPaymentMethod})",
                     fontFamily = BreakFonts.Inter,
                     fontWeight = FontWeight.Bold,
                     fontSize = 13.sp,
                     color = Color(0xFF5D2EAF)
                 )
             }
+
+            Spacer(Modifier.width(10.dp))
 
             Box(
                 modifier = Modifier
@@ -239,64 +493,94 @@ fun OrderTrackingScreen(
         Spacer(Modifier.height(12.dp))
 
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            // Notificación 1
-            NotificationPill(
-                icon = {
-                    Icon(
-                        imageVector = Icons.Default.Notifications,
-                        contentDescription = null,
-                        tint = BreakColors.Amber,
-                        modifier = Modifier.size(18.dp)
-                    )
-                },
-                text = "¡Tu pedido ha sido recibido!"
-            )
+            // Mostrar notificaciones dinámicas del pedido
+            order.notifications.forEach { notif ->
+                NotificationPill(
+                    icon = {
+                        Icon(
+                            imageVector = if (notif.isRating) Icons.Default.Star else Icons.Default.Notifications,
+                            contentDescription = null,
+                            tint = BreakColors.Amber,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    },
+                    text = if (notif.isRating && uiState.ratingSent) {
+                        "¡Gracias por calificar tu pedido! (${uiState.selectedRating} ⭐)"
+                    } else {
+                        notif.message
+                    },
+                    onClick = if (notif.isRating && !uiState.ratingSent) {
+                        { viewModel.openRatingDialog() }
+                    } else null
+                )
+            }
 
-            // Notificación 2
-            NotificationPill(
-                icon = {
-                    Icon(
-                        imageVector = Icons.Default.Notifications,
-                        contentDescription = null,
-                        tint = BreakColors.Amber,
-                        modifier = Modifier.size(18.dp)
-                    )
-                },
-                text = "Tiempo de preparación actualizado"
-            )
-
-            // Notificación 3
-            NotificationPill(
-                icon = {
-                    Icon(
-                        imageVector = Icons.Default.Notifications,
-                        contentDescription = null,
-                        tint = BreakColors.Amber,
-                        modifier = Modifier.size(18.dp)
-                    )
-                },
-                text = "Tu pedido está LISTO para recoger (hace 1 min)"
-            )
-
-            // Notificación 4: Calificación
-            NotificationPill(
-                icon = {
-                    Icon(
-                        imageVector = Icons.Default.Star,
-                        contentDescription = null,
-                        tint = BreakColors.Amber,
-                        modifier = Modifier.size(18.dp)
-                    )
-                },
-                text = if (uiState.ratingSent) "¡Gracias por calificar tu pedido! (${uiState.selectedRating} ⭐)" else "Califica tu pedido",
-                onClick = { if (!uiState.ratingSent) viewModel.openRatingDialog() }
-            )
+            // Si está listo y no entregado, mostrar pill para confirmar
+            if (order.status == OrderStatus.LISTO) {
+                NotificationPill(
+                    icon = {
+                        Icon(
+                            imageVector = Icons.Default.CheckCircle,
+                            contentDescription = null,
+                            tint = BreakColors.Amber,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    },
+                    text = "¿Ya recibiste tu pedido? Toca aquí para confirmar",
+                    onClick = { viewModel.openConfirmDeliveryDialog(order) }
+                )
+            }
         }
 
         Spacer(Modifier.height(24.dp))
     }
 
-    // Modal para calificar el pedido
+    // --- MODAL DIÁLOGO DE CONFIRMACIÓN DE ENTREGA ---
+    if (uiState.showConfirmDeliveryDialog) {
+        val target = uiState.orderToConfirm ?: order
+        AlertDialog(
+            onDismissRequest = viewModel::closeConfirmDeliveryDialog,
+            title = {
+                Text(
+                    text = "¿Ya recibiste tu pedido?",
+                    fontFamily = BreakFonts.Inter,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp
+                )
+            },
+            text = {
+                Column {
+                    Text(
+                        text = "Confirma que ya tienes tu orden ${target.id} de ${target.restaurantName} contigo.",
+                        fontFamily = BreakFonts.Inter,
+                        fontSize = 14.sp
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    Text(
+                        text = "Al confirmar, el pedido pasará a tu historial como entregado exitosamente.",
+                        fontFamily = BreakFonts.Inter,
+                        fontSize = 12.sp,
+                        color = Color.Gray
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = { viewModel.confirmDelivery(target.id) },
+                    colors = ButtonDefaults.buttonColors(containerColor = BreakColors.Amber)
+                ) {
+                    Text("Sí, ya lo tengo", color = Color(0xFF1E1B26), fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = viewModel::closeConfirmDeliveryDialog) {
+                    Text("Aún no", color = Color.Gray)
+                }
+            }
+        )
+    }
+
+    // --- MODAL PARA CALIFICAR EL PEDIDO ---
     if (uiState.showRatingDialog) {
         AlertDialog(
             onDismissRequest = viewModel::closeRatingDialog,
@@ -343,7 +627,7 @@ fun OrderTrackingScreen(
             },
             dismissButton = {
                 TextButton(onClick = viewModel::closeRatingDialog) {
-                    Text("Cancelar", color = Color.Gray)
+                    Text("Cerrar", color = Color.Gray)
                 }
             }
         )
@@ -356,6 +640,7 @@ private fun TimelineStepItem(
     title: String,
     subtitle: String?,
     isCompleted: Boolean,
+    isActive: Boolean = false,
     showBottomLine: Boolean
 ) {
     val textMuted = Color(0xFFB3A5D9)
@@ -366,7 +651,13 @@ private fun TimelineStepItem(
                 modifier = Modifier
                     .size(34.dp)
                     .clip(CircleShape)
-                    .background(if (isCompleted) BreakColors.Amber else Color(0xFF4C2A9E)),
+                    .background(
+                        when {
+                            isActive -> BreakColors.Amber
+                            isCompleted -> Color(0xFF4CAF50)
+                            else -> Color(0xFF4C2A9E)
+                        }
+                    ),
                 contentAlignment = Alignment.Center
             ) {
                 icon()
@@ -377,7 +668,7 @@ private fun TimelineStepItem(
                     modifier = Modifier
                         .width(3.dp)
                         .height(34.dp)
-                        .background(if (isCompleted) BreakColors.Amber else Color(0xFF4C2A9E))
+                        .background(if (isCompleted) Color(0xFF4CAF50) else Color(0xFF4C2A9E))
                 )
             }
         }
@@ -394,7 +685,7 @@ private fun TimelineStepItem(
                 fontFamily = BreakFonts.Inter,
                 fontWeight = FontWeight.Bold,
                 fontSize = 15.sp,
-                color = Color.White
+                color = if (isActive) BreakColors.Amber else Color.White
             )
             if (subtitle != null) {
                 Spacer(Modifier.height(2.dp))
@@ -436,10 +727,4 @@ private fun NotificationPill(
             color = Color.White
         )
     }
-}
-
-@androidx.compose.ui.tooling.preview.Preview(showBackground = true)
-@Composable
-private fun OrderTrackingPreview() {
-    OrderTrackingScreen(onBack = {})
 }

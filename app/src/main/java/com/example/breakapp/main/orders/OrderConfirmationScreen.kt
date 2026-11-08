@@ -311,7 +311,7 @@ fun OrderConfirmationScreen(
                 }
 
                 Text(
-                    text = order.date,
+                    text = "${order.date} • ${order.time}",
                     fontFamily = BreakFonts.Inter,
                     fontSize = 11.sp,
                     color = textMuted
