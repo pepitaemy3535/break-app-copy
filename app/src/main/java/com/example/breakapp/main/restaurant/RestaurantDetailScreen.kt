@@ -370,6 +370,20 @@ private fun ProductGridCard(
             overflow = TextOverflow.Ellipsis
         )
 
+        if (product.description.isNotBlank()) {
+            Spacer(Modifier.height(2.dp))
+            Text(
+                text = product.description,
+                fontFamily = BreakFonts.Inter,
+                fontWeight = FontWeight.Normal,
+                fontSize = 10.sp,
+                lineHeight = 13.sp,
+                color = textMuted,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
+
         Spacer(Modifier.height(4.dp))
 
         Text(
