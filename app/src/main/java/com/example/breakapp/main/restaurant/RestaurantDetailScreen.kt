@@ -42,6 +42,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import com.example.breakapp.main.components.ProductDetailBottomSheet
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -74,6 +78,7 @@ fun RestaurantDetailScreen(
 
     val state by viewModel.uiState.collectAsState()
     val cartState by viewModel.cartState.collectAsState()
+    var selectedProductForDetail by remember { mutableStateOf<Product?>(null) }
 
     val deepPurpleCard = Color(0xFF381B7A)
     val textMuted = Color(0xFFB3A5D9)
@@ -272,6 +277,7 @@ fun RestaurantDetailScreen(
                                     product = product,
                                     quantity = qty,
                                     stock = stock,
+                                    onClick = { selectedProductForDetail = product },
                                     onIncrease = { viewModel.increaseQuantity(product) },
                                     onDecrease = { viewModel.decreaseQuantity(product) },
                                     modifier = Modifier.weight(1f)
@@ -326,6 +332,20 @@ fun RestaurantDetailScreen(
                 }
             }
         }
+
+        selectedProductForDetail?.let { prod ->
+            val stock = viewModel.getProductStock(prod.id)
+            val currentQty = viewModel.getProductQuantity(prod.id)
+            ProductDetailBottomSheet(
+                product = prod,
+                stock = stock,
+                initialQuantity = if (currentQty > 0) currentQty else 1,
+                onDismiss = { selectedProductForDetail = null },
+                onAddToCart = { p, q, notes ->
+                    viewModel.addToCartWithNotes(p, q, notes)
+                }
+            )
+        }
     }
 }
 
@@ -334,6 +354,7 @@ private fun ProductGridCard(
     product: Product,
     quantity: Int,
     stock: Int,
+    onClick: () -> Unit = {},
     onIncrease: () -> Unit,
     onDecrease: () -> Unit,
     modifier: Modifier = Modifier
@@ -345,6 +366,7 @@ private fun ProductGridCard(
         modifier = modifier
             .clip(RoundedCornerShape(16.dp))
             .background(cardColor)
+            .clickable(onClick = onClick)
             .padding(10.dp)
     ) {
         // Carga directa de la imagen local del producto

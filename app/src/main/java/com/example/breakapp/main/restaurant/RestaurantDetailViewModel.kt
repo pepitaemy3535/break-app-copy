@@ -299,6 +299,12 @@ class RestaurantDetailViewModel(
         }
     }
 
+    fun addToCartWithNotes(product: Product, quantity: Int, notes: String) {
+        val available = getProductStock(product.id)
+        val validQty = quantity.coerceIn(0, available)
+        cartRepo.addItem(product, validQty, notes)
+    }
+
     fun getProductQuantity(productId: String): Int {
         return cartState.value.items.find { it.product.id == productId }?.quantity ?: 0
     }
