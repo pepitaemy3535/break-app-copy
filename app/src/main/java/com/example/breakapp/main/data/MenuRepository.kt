@@ -42,89 +42,105 @@ object LocalMenuRepository : MenuRepository {
         // ---------- Solo búsqueda (ejemplo del diseño "Bandeja"); no salen en el Inicio ----------
         Product(
             "bandeja_paisa_catering", "Bandeja paisa",
-            "Arroz, frijoles, carne molida, huevo, arepa y plátano",
+            "Arroz blanco, frijoles cargamanto, carne molida sazonada, huevo frito, arepa y tajadas de plátano maduro.",
             12000, "12 min", true, R.drawable.main_img_food_bandeja_paisa, FoodCategory.ALMUERZOS, CATERING,
-            featured = false
+            featured = false,
+            calories = "850 - 950 kcal"
         ),
         Product(
             "bandeja_paisa_world", "Bandeja paisa",
-            "Arroz, frijoles, carne molida, huevo, arepa y plátano",
+            "Porción personal con arroz, frijoles caseros, carne molida, huevo, arepa paisa y plátano maduro.",
             9000, "12 min", true, R.drawable.main_img_food_bandeja_paisa, FoodCategory.ALMUERZOS, WORLD,
-            featured = false
+            featured = false,
+            calories = "750 - 850 kcal"
         ),
         // ---------- Almuerzos ----------
         Product(
             "bandeja_paisa_break", "Bandeja Paisa Break",
-            "Arroz, frijoles, carne molida, huevo, arepa y plátano",
-            18500, "12 min", true, R.drawable.main_img_food_bandeja_paisa, FoodCategory.ALMUERZOS, CATERING
+            "Especialidad de la casa: frijoles tiernos, carne molida jugosa, chicharrón crocante, arroz, huevo, arepa y plátano.",
+            18500, "12 min", true, R.drawable.main_img_food_bandeja_paisa, FoodCategory.ALMUERZOS, CATERING,
+            calories = "950 - 1050 kcal"
         ),
         Product(
             "ajiaco", "Ajiaco Santafereño",
-            "Sopa tradicional con pollo, tres tipos de papas, alcaparras y crema",
-            14500, "12 min", true, R.drawable.main_img_food_ajiaco, FoodCategory.ALMUERZOS, CATERING
+            "Tradicional sopa bogotana con pechuga de pollo desmechada, papa criolla, pastusa y sabanera, servida con alcaparras y crema.",
+            14500, "12 min", true, R.drawable.main_img_food_ajiaco, FoodCategory.ALMUERZOS, CATERING,
+            calories = "620 - 700 kcal"
         ),
         Product(
             "mote_queso", "Mote de Queso",
-            "Sopa de ñame y queso costeño con sofrito",
-            12000, "12 min", false, R.drawable.main_img_food_mote_queso, FoodCategory.ALMUERZOS, WORLD
+            "Sopa típica caribeña a base de ñame espinoso y criollo con generosos dados de queso costeño y sofrito casero.",
+            12000, "12 min", false, R.drawable.main_img_food_mote_queso, FoodCategory.ALMUERZOS, WORLD,
+            calories = "450 - 520 kcal"
         ),
         // ---------- Snacks ----------
         Product(
             "pastel_pollo", "Pastel de pollo",
-            "Hojaldre crujiente relleno de pollo sazonado.",
-            4000, "3 - 5 min", true, R.drawable.main_img_food_pastel_pollo, FoodCategory.SNACKS, WORLD
+            "Masa hojaldrada dorada y crujiente horneada con relleno de pechuga de pollo desmechada y finas hierbas.",
+            4000, "3 - 5 min", true, R.drawable.main_img_food_pastel_pollo, FoodCategory.SNACKS, WORLD,
+            calories = "380 - 420 kcal"
         ),
         Product(
             "almojabana", "Almojábana",
-            "Suave panecillo horneado con auténtico sabor a queso.",
-            3000, "3 - 5 min", true, R.drawable.main_img_food_almojabana, FoodCategory.SNACKS, FRUIT
+            "Suave panecillo artesanal recién horneado con abundante cuajada fresca y auténtico queso campesino.",
+            3000, "3 - 5 min", true, R.drawable.main_img_food_almojabana, FoodCategory.SNACKS, FRUIT,
+            calories = "220 - 250 kcal"
         ),
         Product(
             "chocoramo", "Chocoramo",
-            "Bizcocho tradicional colombiano cubierto de chocolate crocante.",
-            5000, "1 min", true, R.drawable.main_img_food_chocoramo, FoodCategory.SNACKS, WORLD
+            "El clásico bizcocho colombiano de vainilla esponjoso, cubierto con una capa crujiente de chocolate oscuro.",
+            5000, "1 min", true, R.drawable.main_img_food_chocoramo, FoodCategory.SNACKS, WORLD,
+            calories = "240 kcal"
         ),
         Product(
             "empanada_carne", "Empanada de carne",
-            "Crujiente masa de maíz rellena de carne sazonada.",
-            3500, "2 - 4 min", true, R.drawable.main_img_food_empanada, FoodCategory.SNACKS, WORLD
+            "Crujiente masa de maíz amarillo frita y rellena de carne molida sazonada y papa criolla con ají opcional.",
+            3500, "2 - 4 min", true, R.drawable.main_img_food_empanada, FoodCategory.SNACKS, WORLD,
+            calories = "210 - 250 kcal"
         ),
         Product(
             "pandebono", "Pandebono",
-            "Tradicional panecillo horneado de maíz y abundante queso, suave y esponjoso.",
-            3000, "2 - 4 min", false, R.drawable.main_img_food_pandebono, FoodCategory.SNACKS, FRUIT
+            "Tradicional panecillo valluno horneado con fécula de maíz, almidón de yuca y abundante queso costeño.",
+            3000, "2 - 4 min", false, R.drawable.main_img_food_pandebono, FoodCategory.SNACKS, FRUIT,
+            calories = "180 - 210 kcal"
         ),
         // ---------- Bebidas ----------
         Product(
             "cocacola", "Coca-cola personal",
-            "La clásica y refrescante bebida de siempre en su tamaño individual.",
-            4500, "1 min", true, R.drawable.main_img_food_cocacola, FoodCategory.BEBIDAS, WORLD
+            "Gaseosa Coca-Cola Original fría en presentación personal de 400 ml, ideal para acompañar tus comidas.",
+            4500, "1 min", true, R.drawable.main_img_food_cocacola, FoodCategory.BEBIDAS, WORLD,
+            calories = "170 kcal"
         ),
         Product(
             "capuchino", "Capuchino",
-            "Espresso intenso con leche cremosa y abundante espuma. ¡Pura energía!",
-            4500, "3 - 5 min", true, R.drawable.main_img_food_capuchino, FoodCategory.BEBIDAS, FRUIT
+            "Espresso artesanal de café 100% colombiano con leche vaporizada cremosa y suave espuma con toque de canela.",
+            4500, "3 - 5 min", true, R.drawable.main_img_food_capuchino, FoodCategory.BEBIDAS, FRUIT,
+            calories = "110 - 140 kcal"
         ),
         Product(
             "jugos_hit", "Jugos hit",
-            "Refrescante bebida de fruta en su tamaño individual.",
-            4000, "1 min", true, R.drawable.main_img_food_jugo_hit, FoodCategory.BEBIDAS, FRUIT
+            "Refrescante néctar de fruta Hit en botella personal individual (mora, mango o lulo).",
+            4000, "1 min", true, R.drawable.main_img_food_jugo_hit, FoodCategory.BEBIDAS, FRUIT,
+            calories = "180 - 210 kcal"
         ),
         Product(
             "smoothie", "Smoothie de Mango y Maracuyá",
-            "Bebida fría de mango y maracuyá, cremosa y llena de sabor tropical.",
-            4500, "3 - 5 min", true, R.drawable.main_img_food_smoothie, FoodCategory.BEBIDAS, FRUIT
+            "Bebida fría granizada a base de pulpa natural de mango y maracuyá, refrescante y con equilibrio dulce-ácido.",
+            4500, "3 - 5 min", true, R.drawable.main_img_food_smoothie, FoodCategory.BEBIDAS, FRUIT,
+            calories = "180 - 220 kcal"
         ),
         // ---------- Postres ----------
         Product(
             "chocolatina_jet", "Chocolatina Jet",
-            "El chocolate más tradicional de Colombia en su tamaño clásico.",
-            2500, "1 min", true, R.drawable.main_img_food_chocolatina_jet, FoodCategory.POSTRES, WORLD
+            "La chocolatina con leche más querida y tradicional de Colombia (barra clásica de 12 g con lámina coleccionable).",
+            2500, "1 min", true, R.drawable.main_img_food_chocolatina_jet, FoodCategory.POSTRES, WORLD,
+            calories = "65 kcal"
         ),
         Product(
             "muffin", "Muffin de arándanos",
-            "Suave y esponjoso bizcocho horneado con arándanos silvestres.",
-            4000, "1 min", true, R.drawable.main_img_food_muffin, FoodCategory.POSTRES, FRUIT
+            "Muffin artesanal horneado de masa suave y húmeda con abundantes arándanos silvestres y notas de vainilla.",
+            4000, "1 min", true, R.drawable.main_img_food_muffin, FoodCategory.POSTRES, FRUIT,
+            calories = "260 - 300 kcal"
         ),
         // ---------- Productos de Catering Gourmet (según diseño Figma) ----------
         Product(
