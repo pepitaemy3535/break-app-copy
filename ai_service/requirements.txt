@@ -1,0 +1,4 @@
+# Requisitos del microservicio BreakApp-AI
+# El servidor funciona usando la biblioteca estándar de Python (3.11+).
+tzdata>=2025.2; platform_system == "Windows"
+pytest>=8.0,<9.0
