@@ -88,7 +88,8 @@ fun BreakMainScreen(
                             },
                             onSeeAllRestaurants = { showRestaurants = true },
                             onRestaurantClick = { rest -> onRestaurantClick(rest.id) },
-                            onProductClick = { product -> onProductClick(product) }
+                            onProductClick = { product -> onProductClick(product) },
+                            onRecommendationsClick = onRecommendationsClick
                         )
                     }
 

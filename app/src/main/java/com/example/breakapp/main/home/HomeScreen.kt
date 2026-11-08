@@ -1,4 +1,4 @@
-package com.example.breakapp.main.home
+﻿package com.example.breakapp.main.home
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -23,6 +23,10 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
+import androidx.compose.material3.Icon
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -61,6 +65,7 @@ fun HomeScreen(
     modifier: Modifier = Modifier,
     onProductClick: (Product) -> Unit = {},       // sin pantalla de detalle todavía
     onRestaurantClick: (Restaurant) -> Unit = {}, // sin pantalla de detalle todavía
+    onRecommendationsClick: () -> Unit = {},
     repository: MenuRepository = menuRepository
 ) {
     var selected by rememberSaveable { mutableStateOf(FoodCategory.ALMUERZOS) }
@@ -93,6 +98,10 @@ fun HomeScreen(
         }
 
         Spacer(Modifier.height(24.dp))
+
+        AiAssistantHomeBanner(onClick = onRecommendationsClick)
+
+        Spacer(Modifier.height(18.dp))
 
         FastOrderBanner()
 
@@ -248,6 +257,71 @@ private fun FastOrderBanner() {
                 fontWeight = FontWeight.Normal,
                 fontSize = 11.sp,
                 color = BreakColors.GrayText
+            )
+        }
+    }
+}
+
+@Composable
+private fun AiAssistantHomeBanner(onClick: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .padding(horizontal = 24.dp)
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
+            .background(Color(0xFF381E72))
+            .border(1.dp, BreakColors.Amber.copy(alpha = 0.5f), RoundedCornerShape(16.dp))
+            .clickable(onClick = onClick)
+            .padding(14.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(
+            modifier = Modifier
+                .size(42.dp)
+                .clip(CircleShape)
+                .background(BreakColors.Amber.copy(alpha = 0.2f)),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = Icons.Default.AutoAwesome,
+                contentDescription = null,
+                tint = BreakColors.Amber,
+                modifier = Modifier.size(22.dp)
+            )
+        }
+        Column(modifier = Modifier.weight(1f)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = "Asistente Break IA",
+                    fontFamily = BreakFonts.Inter,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 14.sp,
+                    color = BreakColors.Amber
+                )
+                Spacer(Modifier.width(6.dp))
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(BreakColors.Amber.copy(alpha = 0.2f))
+                        .padding(horizontal = 6.dp, vertical = 2.dp)
+                ) {
+                    Text(
+                        text = "Recomendaciones",
+                        fontFamily = BreakFonts.Inter,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 10.sp,
+                        color = BreakColors.Amber
+                    )
+                }
+            }
+            Spacer(Modifier.height(2.dp))
+            Text(
+                text = "No sabes qué pedir? Toca aquí para ver sugerencias personalizadas de la IA.",
+                fontFamily = BreakFonts.Inter,
+                fontSize = 11.sp,
+                color = Color.White.copy(alpha = 0.85f),
+                lineHeight = 15.sp
             )
         }
     }
