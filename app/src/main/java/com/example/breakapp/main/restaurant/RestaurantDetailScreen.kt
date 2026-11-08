@@ -30,6 +30,9 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
+import com.example.breakapp.main.data.FavoritesRepository
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -370,15 +373,40 @@ private fun ProductGridCard(
             .padding(10.dp)
     ) {
         // Carga directa de la imagen local del producto
-        Image(
-            painter = painterResource(if (product.imageRes != 0) product.imageRes else R.drawable.main_img_food_chocoramo),
-            contentDescription = product.name,
-            contentScale = ContentScale.Crop,
+        val favoriteProducts by FavoritesRepository.favoriteProductIds.collectAsState()
+        val isFavorite = product.id in favoriteProducts
+
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(105.dp)
-                .clip(RoundedCornerShape(12.dp))
-        )
+        ) {
+            Image(
+                painter = painterResource(if (product.imageRes != 0) product.imageRes else R.drawable.main_img_food_chocoramo),
+                contentDescription = product.name,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clip(RoundedCornerShape(12.dp))
+            )
+            Box(
+                modifier = Modifier
+                    .padding(6.dp)
+                    .size(26.dp)
+                    .align(Alignment.TopEnd)
+                    .clip(CircleShape)
+                    .background(Color.Black.copy(alpha = 0.4f))
+                    .clickable { FavoritesRepository.toggleProductFavorite(product.id) },
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                    contentDescription = "Favorito",
+                    tint = if (isFavorite) Color(0xFFEF4444) else Color.White,
+                    modifier = Modifier.size(15.dp)
+                )
+            }
+        }
 
         Spacer(Modifier.height(8.dp))
 

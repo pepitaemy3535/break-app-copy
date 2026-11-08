@@ -26,6 +26,13 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material3.Icon
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.layout.fillMaxSize
+import com.example.breakapp.main.data.FavoritesRepository
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -67,14 +74,36 @@ fun ProductCard(
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Image(
-            painter = painterResource(product.imageRes),
-            contentDescription = product.name,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .size(80.dp)
-                .clip(RoundedCornerShape(12.dp))
-        )
+        val favoriteProducts by FavoritesRepository.favoriteProductIds.collectAsState()
+        val isFavorite = product.id in favoriteProducts
+
+        Box(modifier = Modifier.size(80.dp)) {
+            Image(
+                painter = painterResource(product.imageRes),
+                contentDescription = product.name,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clip(RoundedCornerShape(12.dp))
+            )
+            Box(
+                modifier = Modifier
+                    .padding(4.dp)
+                    .size(24.dp)
+                    .align(Alignment.TopEnd)
+                    .clip(CircleShape)
+                    .background(Color.Black.copy(alpha = 0.35f))
+                    .clickable { FavoritesRepository.toggleProductFavorite(product.id) },
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                    contentDescription = "Favorito",
+                    tint = if (isFavorite) Color(0xFFEF4444) else Color.White,
+                    modifier = Modifier.size(14.dp)
+                )
+            }
+        }
         Column(
             modifier = Modifier.weight(1f),
             verticalArrangement = Arrangement.spacedBy(6.dp)
@@ -171,6 +200,9 @@ fun RestaurantCardVertical(
     modifier: Modifier = Modifier,
     onClick: () -> Unit = {} // todavía no hay pantalla de detalle
 ) {
+    val favoriteRestaurants by FavoritesRepository.favoriteRestaurantIds.collectAsState()
+    val isFavorite = restaurant.id in favoriteRestaurants
+
     val shape = RoundedCornerShape(16.dp)
     Column(
         modifier = modifier
@@ -178,14 +210,31 @@ fun RestaurantCardVertical(
             .restaurantCardStyle(shape)
             .clickable(onClick = onClick)
     ) {
-        Image(
-            painter = painterResource(restaurant.logoRes),
-            contentDescription = restaurant.name,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .fillMaxWidth()
-                .aspectRatio(900f / 490f)
-        )
+        Box(modifier = Modifier.fillMaxWidth().aspectRatio(900f / 490f)) {
+            Image(
+                painter = painterResource(restaurant.logoRes),
+                contentDescription = restaurant.name,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize()
+            )
+            Box(
+                modifier = Modifier
+                    .padding(8.dp)
+                    .size(28.dp)
+                    .align(Alignment.TopEnd)
+                    .clip(CircleShape)
+                    .background(Color.Black.copy(alpha = 0.35f))
+                    .clickable { FavoritesRepository.toggleRestaurantFavorite(restaurant.id) },
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                    contentDescription = "Favorito",
+                    tint = if (isFavorite) Color(0xFFEF4444) else Color.White,
+                    modifier = Modifier.size(16.dp)
+                )
+            }
+        }
         Column(
             modifier = Modifier
                 .fillMaxWidth()
