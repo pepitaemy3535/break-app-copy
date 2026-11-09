@@ -37,6 +37,11 @@ import com.example.breakapp.ui.perfil.components.PerfilTopBar
 import com.example.breakapp.ui.theme.Ambar
 import com.example.breakapp.ui.theme.BreakAppTheme
 import com.example.breakapp.ui.theme.Fondo
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import com.example.breakapp.main.data.FavoritesRepository
+import com.example.breakapp.main.theme.BreakFonts
 
 @Composable
 fun PerfilScreen(
@@ -83,6 +88,7 @@ fun PerfilScreen(
     }
 
     val scrollState = rememberScrollState()
+    var mostrarFavoritos by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -194,6 +200,11 @@ fun PerfilScreen(
                 onClick = {}
             )
             PerfilMenuItem(
+                titulo = "Mis favoritos",
+                icono = Icons.Default.Favorite,
+                onClick = { mostrarFavoritos = true }
+            )
+            PerfilMenuItem(
                 titulo = "Direcciones",
                 icono = Icons.Default.LocationOn,
                 onClick = onNavigateToEditarPerfil
@@ -217,6 +228,80 @@ fun PerfilScreen(
 
         Spacer(modifier = Modifier.height(32.dp))
         PieUniversidad(modifier = Modifier.padding(horizontal = 20.dp))
+    }
+
+    if (mostrarFavoritos) {
+        val favoriteProducts by FavoritesRepository.favoriteProductIds.collectAsState()
+        val favoriteRestaurants by FavoritesRepository.favoriteRestaurantIds.collectAsState()
+        val totalFavoritos = favoriteProducts.size + favoriteRestaurants.size
+
+        AlertDialog(
+            onDismissRequest = { mostrarFavoritos = false },
+            title = {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Default.Favorite,
+                        contentDescription = null,
+                        tint = Color(0xFFEF4444),
+                        modifier = Modifier.size(24.dp)
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    Text(
+                        text = "Mis favoritos",
+                        fontFamily = BreakFonts.Inter,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White,
+                        fontSize = 18.sp
+                    )
+                }
+            },
+            text = {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    if (totalFavoritos == 0) {
+                        Text(
+                            text = "Aún no tienes favoritos guardados.\n\nPulsa el corazón ❤️ en los platos o restaurantes para encontrarlos rápidamente aquí.",
+                            fontFamily = BreakFonts.Inter,
+                            fontSize = 13.sp,
+                            color = Color.White.copy(alpha = 0.85f),
+                            lineHeight = 18.sp
+                        )
+                    } else {
+                        Text(
+                            text = "Tienes $totalFavoritos elementos guardados (${favoriteProducts.size} platos y ${favoriteRestaurants.size} cafeterías).",
+                            fontFamily = BreakFonts.Inter,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = Color.White
+                        )
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            text = "Puedes consultar tus platos guardados directamente en la pestaña de Búsqueda usando el filtro rápido '❤️ Favoritos'.",
+                            fontFamily = BreakFonts.Inter,
+                            fontSize = 12.sp,
+                            color = Color(0xFFB3A5D9),
+                            lineHeight = 16.sp
+                        )
+                    }
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = { mostrarFavoritos = false },
+                    colors = ButtonDefaults.buttonColors(containerColor = Ambar)
+                ) {
+                    Text(
+                        text = "Entendido",
+                        fontFamily = BreakFonts.Inter,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF1E1B26)
+                    )
+                }
+            },
+            containerColor = Color(0xFF381B7A)
+        )
     }
 }
 

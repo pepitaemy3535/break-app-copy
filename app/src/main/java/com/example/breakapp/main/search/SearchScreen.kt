@@ -194,7 +194,7 @@ fun SearchScreen(
                     .padding(horizontal = 24.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                val quickChips = listOf("Almuerzos", "Pizzas", "Bebidas", "Postres", "Snacks", "Café")
+                val quickChips = listOf("❤️ Favoritos", "Almuerzos", "Pizzas", "Bebidas", "Postres", "Snacks", "Café")
                 quickChips.forEach { chip ->
                     Box(
                         modifier = Modifier
@@ -339,12 +339,13 @@ private fun SearchCard(
                 if (query.isNotBlank()) {
                     SectionLabel("Coincidencias")
                     if (results.isEmpty) {
+                        val isFav = query.contains("favorito", ignoreCase = true)
                         Text(
-                            text = "Sin coincidencias todavía",
+                            text = if (isFav) "Aún no tienes favoritos guardados.\n¡Toca el corazón en cualquier plato o restaurante para verlo aquí!" else "Sin coincidencias todavía",
                             modifier = Modifier.padding(horizontal = 18.dp, vertical = 6.dp),
                             fontFamily = BreakFonts.Inter,
                             fontWeight = FontWeight.Medium,
-                            fontSize = 14.sp,
+                            fontSize = 13.sp,
                             color = BreakColors.GrayLight
                         )
                     }

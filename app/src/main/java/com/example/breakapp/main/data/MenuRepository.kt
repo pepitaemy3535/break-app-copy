@@ -903,7 +903,17 @@ object LocalMenuRepository : MenuRepository {
         catalog.filter { it.featured && it.category == category }
 
     override fun search(query: String): SearchResults {
-        val tokens = query.normalized().split(" ").filter { it.isNotBlank() }
+        val norm = query.normalized()
+        if (norm.contains("favorito")) {
+            val favProductIds = FavoritesRepository.favoriteProductIds.value
+            val favRestIds = FavoritesRepository.favoriteRestaurantIds.value
+            val favProducts = catalog.filter { it.id in favProductIds }
+                .mapNotNull { p -> restaurantsById[p.restaurantId]?.let { ProductMatch(p, it) } }
+            val favRestaurants = restaurantList.filter { it.id in favRestIds }
+            return SearchResults(favProducts, favRestaurants)
+        }
+
+        val tokens = norm.split(" ").filter { it.isNotBlank() }
         if (tokens.isEmpty()) return SearchResults(emptyList(), emptyList())
 
         val products = catalog
