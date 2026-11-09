@@ -197,6 +197,9 @@ fun BreakNavHost(
                 onBack = { navController.popBackStack() },
                 onExploreRestaurants = {
                     navController.popBackStack()
+                },
+                onNavigateToCart = {
+                    navController.navigate(Rutas.CARRITO)
                 }
             )
         }

@@ -50,6 +50,7 @@ import com.example.breakapp.main.theme.BreakColors
 import com.example.breakapp.main.theme.BreakFonts
 import com.example.breakapp.model.AiComboDto
 import com.example.breakapp.model.AiRecommendationDto
+import kotlinx.coroutines.launch
 
 @Composable
 fun AiRecommendationsScreen(
@@ -57,11 +58,16 @@ fun AiRecommendationsScreen(
     onBack: () -> Unit,
     onExploreRestaurants: () -> Unit = {},
     onProductClick: (Product) -> Unit = {},
+    onNavigateToCart: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val scrollState = rememberScrollState()
     val focusManager = LocalFocusManager.current
     val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val cartState by CartRepository.cartState.collectAsState()
+    var conflictProduct by remember { mutableStateOf<Product?>(null) }
     var inputText by remember { mutableStateOf("") }
 
     val uiState by viewModel.uiState.collectAsState()
@@ -84,12 +90,16 @@ fun AiRecommendationsScreen(
         viewModel.enviarMensaje(clean)
     }
 
-    Column(
+    Box(
         modifier = modifier
             .fillMaxSize()
             .background(BreakColors.Background)
-            .statusBarsPadding()
     ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .statusBarsPadding()
+        ) {
         // --- TOP BAR ---
         Row(
             modifier = Modifier
@@ -214,8 +224,21 @@ fun AiRecommendationsScreen(
                         onAddToCart = { dto ->
                             val matched = findCatalogProduct(dto.productId, dto.name)
                             if (matched != null) {
-                                CartRepository.addItem(matched, 1)
-                                Toast.makeText(context, "${matched.name} agregado al carrito", Toast.LENGTH_SHORT).show()
+                                if (!CartRepository.canAddItem(matched)) {
+                                    conflictProduct = matched
+                                } else {
+                                    CartRepository.addItem(matched, 1)
+                                    coroutineScope.launch {
+                                        val result = snackbarHostState.showSnackbar(
+                                            message = "✨ ${matched.name} agregado al carrito",
+                                            actionLabel = "Ver carrito",
+                                            duration = SnackbarDuration.Short
+                                        )
+                                        if (result == SnackbarResult.ActionPerformed) {
+                                            onNavigateToCart()
+                                        }
+                                    }
+                                }
                             } else {
                                 Toast.makeText(context, "${dto.name} añadido a tus preferencias", Toast.LENGTH_SHORT).show()
                             }
@@ -223,9 +246,26 @@ fun AiRecommendationsScreen(
                         onAddComboToCart = { combo ->
                             val mainProd = findCatalogProductByName(combo.mainName)
                             val pairProd = findCatalogProductByName(combo.pairingName)
-                            if (mainProd != null) CartRepository.addItem(mainProd, 1)
-                            if (pairProd != null) CartRepository.addItem(pairProd, 1)
-                            Toast.makeText(context, "Combo ${combo.mainName} + ${combo.pairingName} agregado", Toast.LENGTH_SHORT).show()
+                            if (mainProd != null) {
+                                if (!CartRepository.canAddItem(mainProd)) {
+                                    conflictProduct = mainProd
+                                } else {
+                                    CartRepository.addItem(mainProd, 1)
+                                    if (pairProd != null && CartRepository.canAddItem(pairProd)) {
+                                        CartRepository.addItem(pairProd, 1)
+                                    }
+                                    coroutineScope.launch {
+                                        val result = snackbarHostState.showSnackbar(
+                                            message = "🎉 Combo ${combo.mainName} + ${combo.pairingName} agregado al carrito",
+                                            actionLabel = "Ver carrito",
+                                            duration = SnackbarDuration.Short
+                                        )
+                                        if (result == SnackbarResult.ActionPerformed) {
+                                            onNavigateToCart()
+                                        }
+                                    }
+                                }
+                            }
                         },
                         onExplore = onExploreRestaurants
                     )
@@ -299,6 +339,77 @@ fun AiRecommendationsScreen(
                     )
                 }
             }
+        }
+    }
+
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .navigationBarsPadding()
+                .padding(bottom = 72.dp, start = 16.dp, end = 16.dp)
+        ) { data ->
+            Snackbar(
+                snackbarData = data,
+                containerColor = Color(0xFF381B7A),
+                contentColor = Color.White,
+                actionColor = BreakColors.Amber,
+                shape = RoundedCornerShape(12.dp)
+            )
+        }
+
+        conflictProduct?.let { product ->
+            AlertDialog(
+                onDismissRequest = { conflictProduct = null },
+                title = {
+                    Text(
+                        text = "Cambiar de restaurante",
+                        fontFamily = BreakFonts.Inter,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
+                },
+                text = {
+                    Text(
+                        text = "Tienes productos en tu carrito de \"${cartState.restaurantName}\". Si agregas esta recomendación, se vaciará el carrito para iniciar un pedido con \"${product.name}\". ¿Deseas continuar?",
+                        fontFamily = BreakFonts.Inter,
+                        color = Color.White.copy(alpha = 0.85f),
+                        fontSize = 14.sp
+                    )
+                },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            CartRepository.clearAndAdd(product, 1)
+                            conflictProduct = null
+                            coroutineScope.launch {
+                                val result = snackbarHostState.showSnackbar(
+                                    message = "✨ ${product.name} agregado al carrito",
+                                    actionLabel = "Ver carrito",
+                                    duration = SnackbarDuration.Short
+                                )
+                                if (result == SnackbarResult.ActionPerformed) {
+                                    onNavigateToCart()
+                                }
+                            }
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = BreakColors.Amber)
+                    ) {
+                        Text(
+                            text = "Vaciar y agregar",
+                            fontFamily = BreakFonts.Inter,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF1E1B26)
+                        )
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { conflictProduct = null }) {
+                        Text("Cancelar", color = Color.White)
+                    }
+                },
+                containerColor = Color(0xFF381B7A)
+            )
         }
     }
 }
