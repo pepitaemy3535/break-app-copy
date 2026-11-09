@@ -305,6 +305,16 @@ class RestaurantDetailViewModel(
         cartRepo.addItem(product, validQty, notes)
     }
 
+    fun hasRestaurantConflict(product: Product): Boolean {
+        val currentRestId = cartState.value.restaurantId
+        return currentRestId != null && cartState.value.items.isNotEmpty() && currentRestId != product.restaurantId
+    }
+
+    fun clearCartAndAdd(product: Product, quantity: Int = 1, notes: String = "") {
+        val rest = uiState.value.restaurant
+        cartRepo.clearAndAdd(product, quantity, notes, rest)
+    }
+
     fun getProductQuantity(productId: String): Int {
         return cartState.value.items.find { it.product.id == productId }?.quantity ?: 0
     }

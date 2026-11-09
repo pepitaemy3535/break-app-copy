@@ -35,6 +35,9 @@ import androidx.compose.material.icons.filled.FavoriteBorder
 import com.example.breakapp.main.data.FavoritesRepository
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -82,6 +85,9 @@ fun RestaurantDetailScreen(
     val state by viewModel.uiState.collectAsState()
     val cartState by viewModel.cartState.collectAsState()
     var selectedProductForDetail by remember { mutableStateOf<Product?>(null) }
+    var conflictProduct by remember { mutableStateOf<Product?>(null) }
+    var conflictQuantity by remember { mutableIntStateOf(1) }
+    var conflictNotes by remember { mutableStateOf("") }
 
     val deepPurpleCard = Color(0xFF381B7A)
     val textMuted = Color(0xFFB3A5D9)
@@ -281,7 +287,15 @@ fun RestaurantDetailScreen(
                                     quantity = qty,
                                     stock = stock,
                                     onClick = { selectedProductForDetail = product },
-                                    onIncrease = { viewModel.increaseQuantity(product) },
+                                    onIncrease = {
+                                        if (viewModel.hasRestaurantConflict(product)) {
+                                            conflictProduct = product
+                                            conflictQuantity = 1
+                                            conflictNotes = ""
+                                        } else {
+                                            viewModel.increaseQuantity(product)
+                                        }
+                                    },
                                     onDecrease = { viewModel.decreaseQuantity(product) },
                                     modifier = Modifier.weight(1f)
                                 )
@@ -345,8 +359,63 @@ fun RestaurantDetailScreen(
                 initialQuantity = if (currentQty > 0) currentQty else 1,
                 onDismiss = { selectedProductForDetail = null },
                 onAddToCart = { p, q, notes ->
-                    viewModel.addToCartWithNotes(p, q, notes)
+                    if (viewModel.hasRestaurantConflict(p)) {
+                        conflictProduct = p
+                        conflictQuantity = q
+                        conflictNotes = notes
+                    } else {
+                        viewModel.addToCartWithNotes(p, q, notes)
+                    }
                 }
+            )
+        }
+
+        // Diálogo de confirmación para cambio de restaurante
+        conflictProduct?.let { product ->
+            AlertDialog(
+                onDismissRequest = { conflictProduct = null },
+                title = {
+                    Text(
+                        text = "Cambiar de restaurante",
+                        fontFamily = BreakFonts.Inter,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
+                },
+                text = {
+                    Text(
+                        text = "Tienes productos en tu carrito de \"${cartState.restaurantName}\". Si agregas este producto, se vaciará el carrito actual para iniciar un nuevo pedido en \"${state.restaurant?.name ?: "este restaurante"}\". ¿Deseas continuar?",
+                        fontFamily = BreakFonts.Inter,
+                        color = Color.White.copy(alpha = 0.85f),
+                        fontSize = 14.sp
+                    )
+                },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            viewModel.clearCartAndAdd(product, conflictQuantity, conflictNotes)
+                            conflictProduct = null
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = BreakColors.Amber)
+                    ) {
+                        Text(
+                            text = "Vaciar y agregar",
+                            fontFamily = BreakFonts.Inter,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF1E1B26)
+                        )
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { conflictProduct = null }) {
+                        Text(
+                            text = "Cancelar",
+                            fontFamily = BreakFonts.Inter,
+                            color = Color.White
+                        )
+                    }
+                },
+                containerColor = Color(0xFF381B7A)
             )
         }
     }

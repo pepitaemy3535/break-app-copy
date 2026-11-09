@@ -29,14 +29,9 @@ object CartRepository {
     private val auth = FirebaseAuth.getInstance()
 
     fun setRestaurant(id: String, name: String, location: String, estimatedTime: String = "3-5 min") {
-        if (_cartState.value.restaurantId != id && _cartState.value.items.isNotEmpty()) {
-            _cartState.value = CartState(
-                restaurantId = id,
-                restaurantName = name,
-                restaurantLocation = location,
-                estimatedTime = estimatedTime
-            )
-        } else {
+        // Solo actualizamos la información si el carrito está vacío o pertenece al mismo restaurante.
+        // Nunca se borran los productos existentes simplemente por navegar o entrar a la pantalla de otro restaurante.
+        if (_cartState.value.items.isEmpty() || _cartState.value.restaurantId == id) {
             _cartState.update {
                 it.copy(
                     restaurantId = id,
@@ -48,12 +43,31 @@ object CartRepository {
         }
     }
 
+    fun canAddItem(product: Product): Boolean {
+        val currentRestId = _cartState.value.restaurantId
+        return currentRestId == null || _cartState.value.items.isEmpty() || currentRestId == product.restaurantId
+    }
+
+    fun clearAndAdd(product: Product, quantity: Int = 1, notes: String = "", restaurant: Restaurant? = null) {
+        val rest = restaurant ?: menuRepository.restaurantById(product.restaurantId)
+        _cartState.value = CartState(
+            items = if (quantity > 0) listOf(CartItem(product = product, quantity = quantity, notes = notes)) else emptyList(),
+            restaurantId = rest?.id ?: product.restaurantId,
+            restaurantName = rest?.name ?: "Restaurante",
+            restaurantLocation = rest?.location ?: "",
+            estimatedTime = rest?.timeRange ?: "3-5 min"
+        )
+    }
+
     fun addItem(product: Product, quantity: Int = 1, notes: String = "") {
         if (quantity <= 0) {
             removeItem(product.id)
             return
         }
         _cartState.update { current ->
+            val isFirstItem = current.items.isEmpty() || current.restaurantId == null
+            val rest = if (isFirstItem) menuRepository.restaurantById(product.restaurantId) else null
+
             val existing = current.items.find { it.product.id == product.id }
             val updatedItems = if (existing != null) {
                 current.items.map {
@@ -65,7 +79,13 @@ object CartRepository {
             } else {
                 current.items + CartItem(product = product, quantity = quantity, notes = notes)
             }
-            current.copy(items = updatedItems)
+            current.copy(
+                items = updatedItems,
+                restaurantId = if (isFirstItem && rest != null) rest.id else current.restaurantId,
+                restaurantName = if (isFirstItem && rest != null) rest.name else current.restaurantName,
+                restaurantLocation = if (isFirstItem && rest != null) rest.location else current.restaurantLocation,
+                estimatedTime = if (isFirstItem && rest != null) rest.timeRange else current.estimatedTime
+            )
         }
     }
 
