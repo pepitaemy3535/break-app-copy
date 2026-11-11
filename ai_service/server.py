@@ -4,7 +4,6 @@ Funciona sin dependencias externas obligatorias usando la biblioteca estándar d
 """
 
 import json
-import os
 import pickle
 import re
 import sys
@@ -18,7 +17,6 @@ sys.path.insert(0, str(ROOT_DIR / "src"))
 
 try:
     from break_ia.agent import BreakAgent
-    from break_ia.models import FoodCategory
 except ImportError:
     BreakAgent = None
 
@@ -137,7 +135,7 @@ class BreakAiHandler(BaseHTTPRequestHandler):
 
     def do_POST(self):
         parsed = urlparse(self.path)
-        content_length = int(self.headers.get("Content-Length", 0))
+        content_length = int(self.headers.get("Content-Length", 0) or 0)
         post_data = self.rfile.read(content_length)
 
         try:
@@ -278,7 +276,10 @@ class BreakAiHandler(BaseHTTPRequestHandler):
             self.wfile.write(b'{"error": "Agent not available"}')
             return
 
-        dt = datetime.strptime(when_str, "%Y-%m-%d %H:%M:%S")
+        try:
+            dt = datetime.strptime(when_str, "%Y-%m-%d %H:%M:%S")
+        except ValueError:
+            dt = datetime.now()
         dow = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"][dt.weekday()] if dt.weekday() < 5 else "Lunes"
 
         result = agent.decide(user_id, dt, dow, k)
@@ -310,11 +311,11 @@ class BreakAiHandler(BaseHTTPRequestHandler):
 def run(port=8000):
     server_address = ("0.0.0.0", port)
     httpd = HTTPServer(server_address, BreakAiHandler)
-    print(f"==================================================")
-    print(f"  🤖 Servidor BreakApp-AI iniciado exitosamente")
+    print("==================================================")
+    print("  🤖 Servidor BreakApp-AI iniciado exitosamente")
     print(f"  📡 Escuchando en: http://0.0.0.0:{port}")
     print(f"  🌐 Para emulador Android: http://10.0.2.2:{port}/api/chat")
-    print(f"==================================================")
+    print("==================================================")
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:
